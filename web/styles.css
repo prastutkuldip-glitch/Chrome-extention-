@@ -23,6 +23,12 @@
 
 html { scroll-behavior: smooth; }
 
+/*
+ * The nav is sticky, so an anchor jump would otherwise park the section heading
+ * underneath it. Reserve its height at every scroll target.
+ */
+section[id], header[id], div[id] { scroll-margin-top: 76px; }
+
 body {
   margin: 0;
   font-family: var(--font);
