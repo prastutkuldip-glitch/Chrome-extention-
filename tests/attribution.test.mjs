@@ -114,6 +114,22 @@ test('unknown hosts fall back to the hostname itself', () => {
   assert.equal(result.ruleKind, 'hostname');
 });
 
+test('the suggested name for an unknown host is one a person would accept', () => {
+  // The rule still targets the full hostname; only the human label is trimmed.
+  const cases = [
+    ['app.hey-tool.io', 'Hey Tool'],
+    ['app.notion.so', 'Notion'],
+    ['dashboard.northstarlabs.com', 'Northstarlabs'],
+    ['acme-widgets.co.uk', 'Acme Widgets'],
+    ['localhost', 'Localhost'],
+  ];
+  for (const [hostname, expected] of cases) {
+    const result = deriveWorkspace({ hostname, path: '/' });
+    assert.equal(result.label, expected, hostname);
+    assert.equal(result.ruleValue, hostname, `${hostname} rule must stay exact`);
+  }
+});
+
 test('prettifyLabel makes a label a human would accept', () => {
   assert.equal(prettifyLabel('acme-corp'), 'Acme Corp');
   assert.equal(prettifyLabel('northStarLabs'), 'North Star Labs');

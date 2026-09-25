@@ -179,13 +179,24 @@ to determine creditworthiness — because none of that is possible: nothing leav
 | Icon | 128×128 | ✅ `extension/assets/icons/icon-128.png` |
 | Small promo tile | 440×280 | ✅ `store/promo-tile-440x280.png` |
 | Marquee promo tile | 1400×560 | ✅ `store/promo-marquee-1400x560.png` |
-| Screenshots | 1280×800, at least 1, up to 5 | ⬜ **Must be captured from the running extension** |
+| Screenshots | 1280×800, at least 1, up to 5 | ✅ `store/screenshots/` — five, ready to upload |
 
-Screenshots cannot be generated — they have to come from the real UI, and fabricated ones get
-listings rejected. Load the extension, use it for a day so the data is genuine, then capture:
+The screenshots are genuine renders of the shipped UI, produced by loading the real dashboard in a
+browser through the preview harness (`npm run preview`) with a seeded sample week. Nothing is mocked
+up: the same attribution, merging and rounding code produced those numbers.
 
-1. The week view with three or four clients and a populated timesheet — this is the money shot.
-2. The "Needs review" queue mid-assignment, showing the one-click dropdown.
-3. The popup showing today's hours and the current site being assigned.
-4. Settings → Privacy, showing the blocklist. This is what converts the sceptics.
-5. The export bar, or a downloaded CSV open in a spreadsheet.
+1. `1-week-view.png` — the week view with four clients and a populated timesheet. The money shot.
+2. `2-needs-review.png` — the review queue, showing one-click assignment.
+3. `3-clients-and-rules.png` — clients with their attribution rules visible.
+4. `4-privacy-controls.png` — the blocklist and retention settings. This is what converts sceptics.
+5. `5-export.png` — CSV, invoice lines and summary export.
+
+**Worth replacing them with your own week once you have one.** These are honest but generic; real
+client names and real hours are more persuasive, and you will spot UI problems in your own data that
+a seeded week hides. Regenerate at any time with:
+
+```bash
+npm run preview          # writes the preview pages
+python3 -m http.server 8137
+# then capture at exactly 1280×800
+```

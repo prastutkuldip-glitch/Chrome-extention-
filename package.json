@@ -12,6 +12,7 @@
     "icons": "node tools/make-icons.mjs",
     "check": "node tools/check.mjs",
     "package": "node tools/package.mjs",
+    "preview": "node tools/make-preview.mjs",
     "build": "npm run icons && npm run check && npm run test"
   },
   "keywords": [

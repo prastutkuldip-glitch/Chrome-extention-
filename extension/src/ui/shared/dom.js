@@ -131,7 +131,7 @@ export function modal({ title, body, actions = [], onClose }) {
   const panel = el('div.modal-panel', {}, [
     el('div.modal-head', {}, [
       el('h2', { text: title }),
-      el('button.btn.btn-ghost.btn-icon', { text: '✕', title: 'Close', on: { click: close } }),
+      el('button.btn.btn-ghost.btn-icon', { text: '\u00d7', title: 'Close', on: { click: close } }),
     ]),
     el('div.modal-body', {}, body),
     actions.length ? el('div.modal-foot', {}, actions) : null,

@@ -73,7 +73,11 @@ function clientRow(ctx, client) {
         client.rate
           ? el('span.pill', { text: `${formatMoney(client.rate, app.state.settings.billing.currency)}/h` })
           : el('span.pill.pill-warn', { text: 'no rate' }),
-        summary ? el('span.tiny.subtle', { text: `${formatDecimalHours(summary.roundedSeconds)} h this week` }) : null,
+        // Billed hours for a billable client; tracked hours for a non-billable
+        // one, which would otherwise always read 0.00 and look broken.
+        summary
+          ? el('span.tiny.subtle', { text: `${formatDecimalHours(summary.roundedSeconds || summary.seconds)} h this week` })
+          : null,
       ]),
       el('div.client-rules', {}, [
         ...rules.map((rule) => ruleChip(ctx, rule)),
@@ -101,7 +105,7 @@ function ruleChip(ctx, rule) {
     el('span', { text: rule.value }),
     rule.billable === false ? el('span.tiny', { text: 'n/b' }) : null,
     el('button', {
-      text: '✕',
+      text: '\u00d7',
       title: 'Delete this rule',
       on: {
         click: async () => {

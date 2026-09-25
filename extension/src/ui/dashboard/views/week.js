@@ -321,7 +321,7 @@ function lineRow(ctx, line) {
     el('div.line-amount', { text: line.amount ? formatMoney(line.amount, app.currency) : (line.billable ? '—' : 'n/b') }),
     el('div.line-menu', {}, [
       el('button.btn.btn-sm.btn-ghost', {
-        text: '⋯',
+        text: '\u00b7\u00b7\u00b7',
         title: 'Line options',
         on: { click: () => lineMenu(ctx, line) },
       }),
@@ -388,7 +388,7 @@ function exportSection(ctx) {
   return el('section.section', {}, [
     el('div.section-head', {}, [
       el('h2', { text: 'Export' }),
-      allowed ? null : el('span.locked', { text: '🔒 Pro' }),
+      allowed ? null : el('span.locked', { text: 'Pro only' }),
     ]),
     el('div.card.card-pad', {}, [
       el('div.export-bar', {}, [

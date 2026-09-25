@@ -111,7 +111,7 @@ function zip(entries) {
 }
 
 const manifest = JSON.parse(readFileSync(join(EXT, 'manifest.json'), 'utf8'));
-const files = walk(EXT).filter((file) => !file.endsWith('.DS_Store'));
+const files = walk(EXT).filter((file) => !file.endsWith('.DS_Store') && !file.endsWith('preview.html'));
 
 const entries = files.map((file) => ({
   // ZIP paths always use forward slashes, whatever the host OS does.

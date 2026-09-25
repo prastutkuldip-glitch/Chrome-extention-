@@ -28,7 +28,28 @@ npm run icons
 
 # Build the Chrome Web Store zip into dist/
 npm run package
+
+# Open the real UI in an ordinary browser tab, with a seeded sample week
+npm run preview
+python3 -m http.server 8137
+#   http://localhost:8137/extension/src/ui/dashboard/preview.html
+#   http://localhost:8137/extension/src/ui/popup/preview.html?now=1
+#   http://localhost:8137/web/index.html
 ```
+
+### Previewing without installing
+
+`npm run preview` generates `preview.html` next to each real page: the same HTML, but the entry module
+is loaded by a harness (`preview/`) that stubs `chrome.*` and seeds a realistic week first. IndexedDB
+is genuine in a browser tab, so the storage layer runs untouched — which means what you see is the
+shipping UI running the shipping logic, not a mockup.
+
+Useful variants: `?plan=free` renders the free plan, `?now=1` leaves a session in progress, and the
+hashes `#clients`, `#settings` and `#welcome` jump straight to those screens.
+
+The generated pages are gitignored and excluded from the store package. This harness earned its keep
+immediately: it surfaced a temporal-dead-zone bug that stopped the upgrade dialog from opening at all,
+which no unit test would have caught.
 
 There is no build step and no `node_modules`. The extension is plain ES modules, which keeps the
 source readable for Chrome Web Store reviewers and removes a whole class of supply-chain risk.

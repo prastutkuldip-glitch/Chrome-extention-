@@ -234,7 +234,7 @@ function privacyCard(ctx) {
   const chips = el('div.blocklist-list', {}, privacy.blocklist.map((pattern) => el('span.rule-chip', {}, [
     el('span', { text: pattern }),
     el('button', {
-      text: '✕',
+      text: '\u00d7',
       title: 'Remove',
       on: {
         click: () => patch(ctx, 'privacy', { blocklist: privacy.blocklist.filter((entry) => entry !== pattern) }),

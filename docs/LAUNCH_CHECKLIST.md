@@ -36,9 +36,9 @@ listing arrives when Google is ready.
 - [ ] Paste each permission justification **verbatim** — this is what decides how fast review goes
 - [ ] Fill the data-usage form: *not collected* for every category, all three certifications checked
 - [ ] Privacy policy URL → your live `privacy.html`
-- [ ] Upload the promo tiles from `store/`
-- [ ] **Capture 3–5 real screenshots at 1280×800** from your own populated dashboard. Do not fake
-      these; fabricated screenshots get listings rejected.
+- [ ] Upload the promo tiles from `store/` and the five screenshots from `store/screenshots/`
+- [ ] Optional but better: retake the screenshots from *your* week once step 1 has given you real
+      data. Real client names persuade more than seeded ones.
 - [ ] Submit, then stop refreshing the page. Nothing you do speeds it up.
 
 ---

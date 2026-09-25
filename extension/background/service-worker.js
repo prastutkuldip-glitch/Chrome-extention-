@@ -149,7 +149,7 @@ async function refreshBadge() {
   try {
     const settings = await getSettings();
     if (!settings.tracking.enabled) return paintBadge('off', '#64748b');
-    if (isPaused(settings)) return paintBadge('⏸', '#f59e0b');
+    if (isPaused(settings)) return paintBadge('--', '#f59e0b');
 
     const summary = await todaySummary();
     if (summary.billableSeconds < 60 && summary.trackedSeconds < 60) return paintBadge('', '#0b1220');

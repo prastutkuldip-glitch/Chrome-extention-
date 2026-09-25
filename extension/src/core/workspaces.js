@@ -131,10 +131,33 @@ export function deriveWorkspace(visit) {
 
   return {
     key: hostname,
-    label: prettifyLabel(hostname.replace(/\.(com|net|org|io|co|app|dev|ai|in)$/, '')),
+    label: fallbackLabel(hostname),
     ruleKind: 'hostname',
     ruleValue: hostname,
     tool: sub ? sub.tool : null,
     tenant: null,
   };
+}
+
+/** Subdomains that describe the tool, not the company behind it. */
+const GENERIC_SUBDOMAINS = new Set([
+  'app', 'www', 'my', 'go', 'web', 'dashboard', 'admin', 'portal',
+  'console', 'secure', 'login', 'api', 'beta', 'staging',
+]);
+
+/** Second-level pieces of a public suffix, as in `example.co.uk`. */
+const PUBLIC_SUFFIX_SECOND_LEVEL = new Set(['co', 'com', 'net', 'org', 'ac', 'gov', 'edu']);
+
+/**
+ * A name a person would accept for an unknown host: `app.hey-tool.io` becomes
+ * "Hey Tool", not "App Hey Tool Io". The suggestion is only ever a starting
+ * point — the user can rename the client — but a sensible default is the
+ * difference between one click and a typing exercise.
+ */
+function fallbackLabel(hostname) {
+  const parts = String(hostname).split('.');
+  while (parts.length > 2 && GENERIC_SUBDOMAINS.has(parts[0])) parts.shift();
+  if (parts.length > 2 && PUBLIC_SUFFIX_SECOND_LEVEL.has(parts[parts.length - 2])) parts.splice(-2);
+  else if (parts.length > 1) parts.pop();
+  return prettifyLabel(parts[parts.length - 1] || hostname);
 }

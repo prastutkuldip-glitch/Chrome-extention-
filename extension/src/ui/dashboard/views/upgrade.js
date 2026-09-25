@@ -64,7 +64,9 @@ export function openUpgrade(ctx) {
       el('hr.divider'),
       el('div.field', {}, [
         el('span.label', { text: 'Already bought it?' }),
-        activateRow(ctx, close),
+        // Deferred: `close` is still in its temporal dead zone while this body
+        // array is being built, so it has to be reached through a closure.
+        activateRow(ctx, () => close()),
       ]),
     ],
     actions: [

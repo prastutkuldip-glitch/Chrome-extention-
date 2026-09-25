@@ -205,7 +205,21 @@ body { background: var(--bg); }
 
 .feature-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .feature-list li { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; }
-.feature-list li::before { content: '✓'; color: var(--accent); font-weight: 700; }
+/*
+ * Tick marks are drawn with borders rather than set as a glyph. A character like
+ * U+2713 is missing from some default font stacks and renders as a blank box —
+ * which looks broken in exactly the panels that are meant to build trust.
+ */
+.feature-list li::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 11px;
+  margin: 3px 3px 0 1px;
+  border: solid var(--accent);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
 
 .locked {
   display: inline-flex; align-items: center; gap: 5px;
