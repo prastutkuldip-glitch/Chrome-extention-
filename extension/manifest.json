@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "Billed — Timesheet & Billable Hours",
+  "short_name": "Billed",
+  "version": "1.0.0",
+  "description": "Rebuild your week's billable hours from your own browser activity. Private by design: your data never leaves your device.",
+  "minimum_chrome_version": "116",
+  "icons": {
+    "16": "assets/icons/icon-16.png",
+    "32": "assets/icons/icon-32.png",
+    "48": "assets/icons/icon-48.png",
+    "128": "assets/icons/icon-128.png"
+  },
+  "permissions": [
+    "tabs",
+    "idle",
+    "alarms",
+    "storage",
+    "unlimitedStorage"
+  ],
+  "optional_permissions": [
+    "notifications"
+  ],
+  "optional_host_permissions": [
+    "https://api.gumroad.com/*"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Billed — today's hours",
+    "default_popup": "src/ui/popup/popup.html",
+    "default_icon": {
+      "16": "assets/icons/icon-16.png",
+      "32": "assets/icons/icon-32.png",
+      "48": "assets/icons/icon-48.png",
+      "128": "assets/icons/icon-128.png"
+    }
+  },
+  "options_ui": {
+    "page": "src/ui/dashboard/dashboard.html",
+    "open_in_tab": true
+  }
+}

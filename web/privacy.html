@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — Billed</title>
+<meta name="description" content="Billed stores everything locally on your device. No account, no server, no analytics. This policy explains exactly what is stored and what is not.">
+<link rel="icon" href="assets/favicon-32.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">
+      <img src="assets/favicon-32.png" width="22" height="22" alt="">
+      Billed
+    </a>
+    <span class="grow"></span>
+    <a class="btn btn-sm" href="index.html">Back to site</a>
+  </div>
+</nav>
+
+<main class="section">
+  <div class="wrap" style="max-width:760px">
+    <p class="eyebrow">Last updated 25 September 2026</p>
+    <h1 style="font-size:2.2rem">Privacy Policy</h1>
+
+    <p class="lede">
+      Billed is a browser extension that reconstructs your billable hours. It is built so that the
+      honest answer to "where does my data go?" is "nowhere". This policy says so in detail, and the
+      extension ships as readable source so you can check.
+    </p>
+
+    <h2 style="margin-top:38px">The short version</h2>
+    <div class="panel panel-yes" style="margin-top:14px">
+      <ul>
+        <li>All data stays in your browser profile on your own device.</li>
+        <li>There is no account, no login, no server and no analytics.</li>
+        <li>The developer cannot see your data, and has no way to request it.</li>
+        <li>Uninstalling the extension removes the data with it.</li>
+      </ul>
+    </div>
+
+    <h2 style="margin-top:38px">What is stored</h2>
+    <p>For each period of activity in a work-related tab, Billed stores:</p>
+    <ul>
+      <li>the domain, for example <code>acme.atlassian.net</code>;</li>
+      <li>the path, for example <code>/browse/PAY-2214</code>;</li>
+      <li>the page title, as shown in the tab;</li>
+      <li>a start time and an end time.</li>
+    </ul>
+    <p>
+      It also stores the clients, rules and settings you create, and — if you buy Pro — your licence
+      key. All of it lives in local browser storage (<code>chrome.storage.local</code> and IndexedDB).
+    </p>
+
+    <h2 style="margin-top:38px">What is never stored</h2>
+    <ul>
+      <li><strong>Query strings and URL fragments</strong> are stripped before anything is written, because that is where search terms, session tokens and record identifiers live.</li>
+      <li><strong>Page contents, form fields, passwords and keystrokes.</strong> Billed installs no content scripts, so it has no access to the inside of any page.</li>
+      <li><strong>Screenshots, audio, video or clipboard contents.</strong></li>
+      <li><strong>Anything from a blocked site.</strong> Blocked patterns are filtered before storage, not after.</li>
+      <li><strong>Anything from an Incognito window</strong>, unless you explicitly allow the extension there.</li>
+    </ul>
+    <p>
+      Billed ships with patterns for banking, health, adult and personal-social sites already on the
+      never-track list, and you can add or remove any pattern at any time.
+    </p>
+
+    <h2 style="margin-top:38px">Network activity</h2>
+    <p>
+      A fresh installation of Billed holds <strong>no network permission at all</strong> and makes no
+      requests. There is exactly one exception, and it requires your explicit consent:
+    </p>
+    <ul>
+      <li>
+        If you buy Pro and paste a licence key, Billed asks Chrome for permission to contact the
+        licence server (<code>api.gumroad.com</code>) and sends only that key, so the purchase can be
+        verified. No activity data is ever included. Decline the permission and the extension keeps
+        working on the free plan.
+      </li>
+    </ul>
+    <p>
+      Once activated, the key is re-checked about once a week for as long as the permission remains
+      granted. You can revoke it in Chrome's extension settings, or remove the licence from inside
+      Billed, at any time.
+    </p>
+
+    <h2 style="margin-top:38px">Permissions, and why each one exists</h2>
+    <ul>
+      <li><code>tabs</code> — to read the domain, path and title of the tab you are actively using. This is what makes reconstruction possible; no other permission can provide it.</li>
+      <li><code>idle</code> — to stop the clock when you step away, so idle time is never billed.</li>
+      <li><code>alarms</code> — to save progress once a minute, so a browser restart cannot lose your session.</li>
+      <li><code>storage</code> and <code>unlimitedStorage</code> — to keep your history on your device rather than in a cloud.</li>
+      <li><code>notifications</code> (optional) — only if you switch on the weekly review reminder.</li>
+    </ul>
+    <p>
+      Billed requests no host permissions at install time and injects no code into any website.
+    </p>
+
+    <h2 style="margin-top:38px">Your control</h2>
+    <ul>
+      <li><strong>Pause or stop</strong> tracking whenever you like; recording stops immediately.</li>
+      <li><strong>Block</strong> any domain, subdomain or path so it is never recorded again.</li>
+      <li><strong>Delete</strong> a single site's history, a single timesheet line, or everything at once.</li>
+      <li><strong>Set a retention window</strong> so older activity is removed automatically.</li>
+      <li><strong>Export</strong> a complete backup as one JSON file, on any plan, at any time.</li>
+    </ul>
+
+    <h2 style="margin-top:38px">Payments</h2>
+    <p>
+      Purchases are handled by our payment provider, which acts as merchant of record and processes
+      your name, email and payment details under its own privacy policy. Billed never sees or stores
+      your card details. The only thing that comes back into the extension is your licence key.
+    </p>
+
+    <h2 style="margin-top:38px">Children</h2>
+    <p>Billed is a professional tool and is not directed at children under 13.</p>
+
+    <h2 style="margin-top:38px">Changes</h2>
+    <p>
+      If this policy changes in a way that affects what is stored or transmitted, the change will be
+      described in the extension's release notes as well as here, with an updated date at the top.
+    </p>
+
+    <h2 style="margin-top:38px">Contact</h2>
+    <p>
+      Questions about this policy: <a data-support-link href="#">support</a>. Because there is no
+      server, a data-deletion request is something you carry out yourself in one click — but if you
+      would like help doing it, get in touch.
+    </p>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-inner">
+    <a class="brand" href="index.html" style="color:#fff">
+      <img src="assets/favicon-32.png" width="20" height="20" alt="">
+      Billed
+    </a>
+    <span class="grow"></span>
+    <a href="index.html#pricing">Pricing</a>
+    <a href="index.html#faq">FAQ</a>
+  </div>
+</footer>
+
+<script src="privacy.js"></script>
+</body>
+</html>

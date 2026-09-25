@@ -1,0 +1,26 @@
+{
+  "name": "billed",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Billed — reconstruct your billable hours automatically, 100% locally, in your browser.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test \"tests/*.test.mjs\"",
+    "icons": "node tools/make-icons.mjs",
+    "check": "node tools/check.mjs",
+    "package": "node tools/package.mjs",
+    "build": "npm run icons && npm run check && npm run test"
+  },
+  "keywords": [
+    "chrome-extension",
+    "time-tracking",
+    "billable-hours",
+    "timesheet",
+    "freelance",
+    "consulting"
+  ],
+  "license": "UNLICENSED"
+}
