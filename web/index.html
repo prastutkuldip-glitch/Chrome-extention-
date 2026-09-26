@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Billed — rebuild your billable hours from what you actually did</title>
+<meta name="description" content="Billed rebuilds your week's billable hours from your own browser activity, so Friday afternoon stops being an exercise in memory. 100% local: your data never leaves your device.">
+<link rel="icon" href="assets/favicon-32.png">
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="Billed — your week, reconstructed">
+<meta property="og:description" content="Consultants forget 15–20% of their billable time. Billed rebuilds it from your own browser activity, entirely on your device.">
+<meta property="og:type" content="website">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#top">
+      <img src="assets/favicon-32.png" width="22" height="22" alt="">
+      Billed
+    </a>
+    <div class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <span class="grow"></span>
+    <a class="btn btn-primary btn-sm" href="#install" data-install-cta>Add to Chrome</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">For consultants, freelancers and agencies</p>
+      <h1>You already did the work. Now bill for it.</h1>
+      <p class="lede">
+        Friday, 5pm. You open your timesheet and try to remember Tuesday. Billed already knows:
+        it quietly rebuilds your week from the work tools you were actually in, grouped by client,
+        with ticket numbers attached. One click and it is out of the browser.
+      </p>
+      <div class="hero-cta">
+        <a class="btn btn-primary btn-lg" href="#install" data-install-cta>Add to Chrome — free</a>
+        <a class="btn btn-ghost btn-lg" href="#how" style="color:#cbd5e1">See how it works</a>
+      </div>
+      <p class="hero-note">
+        No account. No sign-up. No server. Your activity never leaves your device —
+        <a href="privacy.html" style="color:#9fb3c8">read the privacy policy</a>.
+      </p>
+    </div>
+
+    <div class="mock" aria-hidden="true">
+      <div class="mock-head">
+        <span class="mock-dot" style="background:#16a34a"></span>
+        Week of 21–27 Sep
+      </div>
+      <div class="mock-stats">
+        <div class="mock-stat"><b>31.5</b><span>Billable</span></div>
+        <div class="mock-stat"><b>$3,780</b><span>To invoice</span></div>
+        <div class="mock-stat mock-stat-warn"><b>4.2</b><span>Unassigned</span></div>
+      </div>
+      <div class="mock-row">
+        <span class="mock-dot" style="background:#2563eb"></span>
+        <span class="m-grow">Acme Corp <span class="mock-ref">PAY-2214</span></span>
+        <b>12.75 h</b>
+      </div>
+      <div class="mock-row">
+        <span class="mock-dot" style="background:#059669"></span>
+        <span class="m-grow">Globex — Website <span class="mock-ref">#812</span></span>
+        <b>9.50 h</b>
+      </div>
+      <div class="mock-row">
+        <span class="mock-dot" style="background:#d97706"></span>
+        <span class="m-grow">Initech — migration runbook</span>
+        <b>6.25 h</b>
+      </div>
+      <div class="mock-row">
+        <span class="mock-dot" style="background:#7c3aed"></span>
+        <span class="m-grow">Soylent — discovery calls</span>
+        <b>3.00 h</b>
+      </div>
+      <div class="mock-row" style="background:#fdf4e6">
+        <span class="mock-dot" style="background:#b45309"></span>
+        <span class="m-grow" style="color:#b45309">app.hey-tool.io — needs a client</span>
+        <b style="color:#b45309">4.20 h</b>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ------------------------------------------------------------------ math -->
+
+<section class="section" id="why">
+  <div class="wrap">
+    <p class="eyebrow">The leak</p>
+    <h2>Reconstruction always rounds down</h2>
+    <p class="lede">
+      Nobody over-bills from memory. You remember the two-hour strategy call and forget the four
+      short ones, the three emails and the two document reviews scattered around it — so the number
+      you write down is always the smaller one. That gap has a price.
+    </p>
+
+    <div class="math-grid">
+      <div class="math">
+        <b>15–20%</b>
+        <p>of billable time goes unlogged at professional-services firms, according to what practitioners report across firms in the $1M–$25M range.</p>
+        <cite><a href="https://enterprisedna.co/resources/guides/consulting-automatic-billable-hours-tracking/">Enterprise DNA</a></cite>
+      </div>
+      <div class="math">
+        <b>$23,400</b>
+        <p>a year, for one person billing $100/hour across 30 billable hours a week, lost to nothing more than poor recall.</p>
+        <cite><a href="https://www.rize.io/blog/freelance-time-tracking">Rize</a></cite>
+      </div>
+      <div class="math">
+        <b>2–4 hrs</b>
+        <p>a week spent on timesheet admin itself under manual processes — time that was never billable in the first place.</p>
+        <cite><a href="https://www.timetackle.com/consulting-hours-tracking/">Timetackle</a></cite>
+      </div>
+    </div>
+
+    <p class="sources">
+      Figures above are summarised from the linked sources. Content was rephrased for compliance with
+      licensing restrictions.
+    </p>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------------ how -->
+
+<section class="section bg-alt" id="how">
+  <div class="wrap">
+    <p class="eyebrow">How it works</p>
+    <h2>Three steps, then it gets out of your way</h2>
+
+    <div class="steps">
+      <div class="step">
+        <h3>It notices where you work</h3>
+        <p>
+          Billed records which work sites are in front of you and for how long — the domain, the page
+          path, the page title, and two timestamps. The clock stops when you stop.
+        </p>
+      </div>
+      <div class="step">
+        <h3>You name the client once</h3>
+        <p>
+          It groups what it saw by the thing that identifies a client — <code>acme.atlassian.net</code>,
+          <code>github.com/acme-corp</code> — and asks once. That answer becomes a rule and applies forever.
+        </p>
+      </div>
+      <div class="step">
+        <h3>Friday takes ten seconds</h3>
+        <p>
+          Hours per client per day, with ticket keys attached as evidence. Download a CSV, copy
+          invoice lines, or paste a summary into an email. Done.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------------ privacy -->
+
+<section class="section" id="privacy">
+  <div class="wrap">
+    <p class="eyebrow">Privacy</p>
+    <h2>A tool that watches your work had better be honest about it</h2>
+    <p class="lede">
+      So here is the whole truth, and you can verify every line of it — Billed ships as readable,
+      unminified source.
+    </p>
+
+    <div class="privacy-cols">
+      <div class="panel panel-yes">
+        <h3>What Billed does</h3>
+        <ul>
+          <li>Stores everything in this browser profile, on this device</li>
+          <li>Keeps a domain, a path, a page title and two timestamps per session</li>
+          <li>Ships with banking, health, adult and personal-social patterns already blocked</li>
+          <li>Lets you block any site, delete any site's history, or wipe everything</li>
+          <li>Exports a full backup as one JSON file, whenever you want</li>
+        </ul>
+      </div>
+      <div class="panel panel-no">
+        <h3>What Billed cannot do</h3>
+        <ul>
+          <li>Send your activity anywhere — there is no account and no server</li>
+          <li>Read page contents, form fields or keystrokes: it has no content scripts</li>
+          <li>Store query strings, where search terms and tokens live</li>
+          <li>Make any network request at all on a fresh install — it holds no network permission</li>
+          <li>Be seen by your employer or anyone else. It is yours alone</li>
+        </ul>
+      </div>
+    </div>
+
+    <p style="margin-top:24px">
+      The one exception, stated plainly: if you buy Pro and paste a licence key, Billed asks your
+      permission to contact the licence server, and sends only that key. Decline and the extension
+      keeps working on the free plan.
+    </p>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------------ features -->
+
+<section class="section bg-alt">
+  <div class="wrap">
+    <p class="eyebrow">Details that matter</p>
+    <h2>Built by someone who has argued about an invoice</h2>
+
+    <div class="features">
+      <div class="feature">
+        <h3>It never invents time</h3>
+        <p>Merging two blocks of work sums the parts. The gap between them is never billed, even when it is short. Under-report, never over-report.</p>
+      </div>
+      <div class="feature">
+        <h3>Idle time is not billable</h3>
+        <p>Walk away and the clock stops. If the browser is killed mid-session, the segment closes at the last confirmed moment — not at whenever it wakes up.</p>
+      </div>
+      <div class="feature">
+        <h3>Ticket keys as evidence</h3>
+        <p>PAY-2214, INC0012345, #812 — pulled out of page titles and attached to the line, so a timesheet can survive a question.</p>
+      </div>
+      <div class="feature">
+        <h3>Billing increments</h3>
+        <p>6, 10, 15, 30 or 60 minutes, nearest or always up, applied per line the way invoices actually work.</p>
+      </div>
+      <div class="feature">
+        <h3>Every rule is inspectable</h3>
+        <p>No model, no guessing. Every hour traces to exactly one rule you wrote, and the most specific rule always wins.</p>
+      </div>
+      <div class="feature">
+        <h3>Calls go on by hand</h3>
+        <p>A call or a meeting cannot be detected, and Billed will not invent one. Add it in a few seconds and it sits on the timesheet like any tracked line.</p>
+      </div>
+      <div class="feature">
+        <h3>Status-update mode</h3>
+        <p>Salaried too? The same data reformats into a weekly update or performance-review bullets, grouped by project instead of money.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------------ pricing -->
+
+<section class="section" id="pricing">
+  <div class="wrap center">
+    <p class="eyebrow">Pricing</p>
+    <h2>Free forever. Pro when it has paid for itself.</h2>
+    <p class="lede">
+      One recovered hour a month covers it several times over. If Billed finds you nothing, do not
+      upgrade — the free plan keeps working.
+    </p>
+
+    <div class="toggle" role="group" aria-label="Currency">
+      <button type="button" data-region="default" aria-pressed="true">USD</button>
+      <button type="button" data-region="india" aria-pressed="false">India (₹)</button>
+    </div>
+
+    <div class="plans">
+      <div class="plan">
+        <div class="plan-name">Free</div>
+        <div class="plan-price">0<small></small></div>
+        <div class="plan-note">no card, no account</div>
+        <ul>
+          <li>Full tracking, always on</li>
+          <li>Last 7 days of history</li>
+          <li>Up to 3 clients</li>
+          <li>Hourly rates and money totals</li>
+          <li>Daily hours in the toolbar</li>
+        </ul>
+        <div class="plan-foot">
+          <a class="btn btn-dark" href="#install" style="width:100%" data-install-cta>Add to Chrome</a>
+        </div>
+      </div>
+
+      <div class="plan plan-featured">
+        <span class="plan-badge">Best value</span>
+        <div class="plan-name">Pro — yearly</div>
+        <div class="plan-price" data-price="yearly">—<small>/year</small></div>
+        <div class="plan-note">renews automatically · card</div>
+        <div class="plan-note" data-note="yearly">&nbsp;</div>
+        <ul>
+          <li>Unlimited history and clients</li>
+          <li>CSV, invoice lines, weekly summaries</li>
+          <li>Billing increments and rounding</li>
+          <li>Friday review reminder</li>
+          <li>Status-update mode</li>
+        </ul>
+        <div class="plan-foot">
+          <a class="btn btn-primary" style="width:100%" data-checkout="yearly" href="#">Get Pro</a>
+          <p class="plan-note" style="margin-top:10px" data-note="monthly-alt">&nbsp;</p>
+        </div>
+      </div>
+
+      <div class="plan">
+        <div class="plan-name">Lifetime</div>
+        <div class="plan-price" data-price="lifetime">—<small>once</small></div>
+        <div class="plan-note">one payment · card or UPI</div>
+        <div class="plan-note">first 100 buyers</div>
+        <ul>
+          <li>Everything in Pro</li>
+          <li>Every future update</li>
+          <li>Pay once, never again</li>
+          <li>Directly supports a one-person product</li>
+        </ul>
+        <div class="plan-foot">
+          <a class="btn" style="width:100%" data-checkout="lifetime" href="#">Buy lifetime</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="upi-box" data-upi-box hidden>
+      <h3>Paying from India? Use UPI.</h3>
+      <p class="small">
+        Card checkout works everywhere, but if UPI is easier, pay directly and I will send your
+        licence key by hand. It is checked once and then works offline forever.
+      </p>
+      <ol class="upi-steps">
+        <li>Send <strong data-upi-amount>—</strong> to <strong class="mono" data-upi-id>—</strong><span data-upi-name></span></li>
+        <li>Email the payment screenshot to <strong data-upi-email>—</strong></li>
+        <li>You get your licence key back, usually within a few hours</li>
+        <li>Open Billed &rsaquo; Settings &rsaquo; Plan, and paste the key</li>
+      </ol>
+      <p class="tiny subtle" data-upi-note></p>
+    </div>
+
+    <p class="refund" data-region-note>
+      Prices include tax where applicable.
+      Not what you hoped for? Reply to your receipt within 14 days and you get your money back.
+    </p>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------------ install -->
+
+<section class="section bg-alt" id="install">
+  <div class="wrap center">
+    <p class="eyebrow">Install</p>
+    <h2 data-install-heading>Get Billed</h2>
+    <div class="install-box" style="text-align:left">
+      <p data-install-intro>
+        <strong>The Chrome Web Store listing is in review.</strong>
+        Until Google approves it you can install the same build directly — this is the normal
+        developer flow and takes about a minute.
+      </p>
+      <ol>
+        <li>Download the build and unzip it.</li>
+        <li>Open <code>chrome://extensions</code>.</li>
+        <li>Turn on <strong>Developer mode</strong>, top right.</li>
+        <li>Click <strong>Load unpacked</strong> and choose the <code>extension</code> folder.</li>
+        <li>Pin Billed to your toolbar, then just work. Come back at the end of the day.</li>
+      </ol>
+      <p style="margin:16px 0 0">
+        <a class="btn btn-primary" data-store-link href="#">Download the build</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------------ faq -->
+
+<section class="section" id="faq">
+  <div class="wrap">
+    <p class="eyebrow">FAQ</p>
+    <h2 class="center">The questions people actually ask</h2>
+
+    <div class="faq">
+      <details>
+        <summary>Is this spyware?</summary>
+        <p>
+          It is the opposite, and the architecture is the proof rather than the promise. Billed has no
+          account, no server and no content scripts, so it cannot read a page's contents even if it
+          wanted to. A fresh install has no network permission whatsoever. Everything sits in your own
+          browser profile, and there is a button that deletes all of it.
+        </p>
+      </details>
+      <details>
+        <summary>Can my employer or my client see this?</summary>
+        <p>
+          No. Nothing is transmitted, so there is nothing for anyone to look at. Billed is a tool for
+          the person doing the work, not a tool for watching them.
+        </p>
+      </details>
+      <details>
+        <summary>What about the sites I do not want tracked?</summary>
+        <p>
+          Banking, health, adult and personal-social patterns are blocked out of the box. You can add
+          any domain, subdomain or single path to the list, and deleting a site also deletes what was
+          already recorded for it.
+        </p>
+      </details>
+      <details>
+        <summary>Does it work if I am on calls, or off the browser?</summary>
+        <p>
+          Browser time is captured automatically. Time away from the browser is not, by design — Billed
+          would rather show you a true number than quietly invent one. So there is an "Add time" button:
+          pick the client, the date and the hours, write what it was, and it joins the timesheet as a
+          normal line with your description on the invoice. A few seconds per call, and the total is
+          complete as well as honest.
+        </p>
+      </details>
+      <details>
+        <summary>How is this different from Toggl, Harvest or RescueTime?</summary>
+        <p>
+          Those either ask you to start and stop a timer, or give you a productivity report that is not
+          shaped like an invoice. Billed does neither: it reconstructs hours per client with no timer at
+          all, runs entirely on your device, and outputs the thing you actually need on Friday.
+        </p>
+      </details>
+      <details>
+        <summary>What happens to my data if I stop paying?</summary>
+        <p>
+          Nothing is deleted, ever. The free plan simply shows the last seven days again, and everything
+          older is still on your device waiting. You can also download a complete JSON backup at any
+          time, on any plan.
+        </p>
+      </details>
+      <details>
+        <summary>Will it slow my browser down?</summary>
+        <p>
+          It records one short row when you change tabs and once a minute otherwise. There is no
+          injected code on the pages you visit, so the pages themselves are untouched.
+        </p>
+      </details>
+      <details>
+        <summary>I am salaried, not billing anyone. Is it useful?</summary>
+        <p>
+          Yes — switch on status-update mode. The same reconstruction becomes your weekly update to a
+          manager, or the bullet list you wish you had the week before a performance review.
+        </p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="wrap foot-inner">
+    <a class="brand" href="#top" style="color:#fff">
+      <img src="assets/favicon-32.png" width="20" height="20" alt="">
+      Billed
+    </a>
+    <span class="grow"></span>
+    <a href="privacy.html">Privacy</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <a data-support-link href="#">Support</a>
+  </div>
+  <div class="wrap" style="margin-top:14px">
+    <span>Your week, reconstructed. Built for people who bill by the hour.</span>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Billed</title>
+  <link rel="icon" href="../../../assets/icons/icon-48.png">
+  <link rel="stylesheet" href="../shared/theme.css">
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <header class="app-head">
+    <div class="app-head-inner">
+      <img src="../../../assets/icons/icon-48.png" width="22" height="22" alt="">
+      <strong class="app-name">Billed</strong>
+      <span id="plan-pill" class="pill">Free</span>
+
+      <nav class="tabs" id="tabs">
+        <button class="tab" data-view="week">Week</button>
+        <button class="tab" data-view="clients">Clients</button>
+        <button class="tab" data-view="settings">Settings</button>
+      </nav>
+
+      <span class="grow"></span>
+      <span id="tracking-state" class="pill"></span>
+      <button id="upgrade-button" class="btn btn-sm btn-primary">Upgrade to Pro</button>
+    </div>
+  </header>
+
+  <main id="view" class="app-main"></main>
+
+  <footer class="app-foot">
+    <span class="tiny subtle">Everything you see is stored on this device only. Billed has no account and no server.</span>
+  </footer>
+
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>
