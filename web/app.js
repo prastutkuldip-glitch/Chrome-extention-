@@ -14,7 +14,7 @@ const SITE_CONFIG = {
   storeUrl: '',
 
   // Direct download of the packaged build, used while review is pending.
-  buildUrl: 'https://github.com/prastutkuldip-glitch/Chrome-extention-/releases/latest',
+  buildUrl: 'billed-v1.0.0.zip',
 
   checkout: {
     monthly: 'https://PLACEHOLDER.gumroad.com/l/billed-pro?variant=Monthly',
