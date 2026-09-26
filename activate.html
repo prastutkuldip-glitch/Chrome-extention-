@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Activating Billed Pro</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="assets/favicon-32.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">
+      <img src="assets/favicon-32.png" width="22" height="22" alt="">
+      Billed
+    </a>
+  </div>
+</nav>
+
+<main class="section">
+  <div class="wrap" style="max-width:640px">
+
+    <div class="panel" id="card">
+      <p class="eyebrow" id="eyebrow">Activating</p>
+      <h1 id="heading" style="font-size:1.9rem">Unlocking Pro…</h1>
+      <p class="lede" id="message">Talking to the extension. This takes a second.</p>
+
+      <div id="spinner-row" class="row" style="display:flex;gap:10px;align-items:center;margin:14px 0">
+        <span class="spinner" aria-hidden="true"></span>
+        <span class="small" style="color:var(--muted)">Please keep this tab open.</span>
+      </div>
+
+      <!-- Shown only if the extension cannot be reached. -->
+      <div id="manual" hidden>
+        <p><strong>Your licence key</strong> — keep this safe, it is your proof of purchase:</p>
+        <p>
+          <code id="key-text" class="keybox">—</code>
+        </p>
+        <p>
+          <button class="btn btn-primary" id="copy">Copy key</button>
+          <a class="btn" id="install" href="index.html#install">Install Billed first</a>
+        </p>
+        <ol class="upi-steps" style="margin-top:16px">
+          <li>Install Billed, if you have not already</li>
+          <li>Click the Billed icon in Chrome, then <strong>Open dashboard</strong></li>
+          <li>Go to <strong>Settings</strong> &rsaquo; <strong>Plan</strong></li>
+          <li>Paste the key and press <strong>Activate</strong></li>
+        </ol>
+        <p class="tiny subtle" id="manual-why"></p>
+      </div>
+
+      <p class="tiny subtle" style="margin-top:18px">
+        A copy of this key is also in your emailed receipt, so you can always come back to it.
+        Something not working? <a data-support-link href="#">Email me</a> and I will sort it out personally.
+      </p>
+    </div>
+
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-inner">
+    <a class="brand" href="index.html" style="color:#fff">
+      <img src="assets/favicon-32.png" width="20" height="20" alt="">
+      Billed
+    </a>
+    <span class="grow"></span>
+    <a href="privacy.html">Privacy</a>
+  </div>
+</footer>
+
+<script src="activate.js"></script>
+</body>
+</html>
