@@ -24,6 +24,11 @@
   "optional_host_permissions": [
     "https://api.gumroad.com/*"
   ],
+  "externally_connectable": {
+    "matches": [
+      "https://prastutkuldip-glitch.github.io/*"
+    ]
+  },
   "background": {
     "service_worker": "background/service-worker.js",
     "type": "module"

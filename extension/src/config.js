@@ -22,6 +22,18 @@ export const LINKS = {
   help: 'https://billed.app/help',
 };
 
+/**
+ * Automatic activation after payment.
+ *
+ * The checkout redirects to `page`, which hands the licence key to the extension
+ * so nobody has to copy and paste anything. `trustedOrigins` must match the
+ * `externally_connectable` entry in the manifest — both are checked.
+ */
+export const ACTIVATION = {
+  page: 'https://prastutkuldip-glitch.github.io/Chrome-extention-/activate.html',
+  trustedOrigins: ['https://prastutkuldip-glitch.github.io'],
+};
+
 /** Gumroad product permalink used for licence verification. */
 export const LICENSING = {
   provider: 'gumroad',

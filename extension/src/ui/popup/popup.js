@@ -181,7 +181,7 @@ async function assign(workspace, choice) {
   const rule = createRule({ clientId, kind: workspace.ruleKind, value: workspace.ruleValue });
   await setRules([...view.rules, rule]);
 
-  toast(`${workspace.label} → ${clients.find((client) => client.id === clientId)?.name}`);
+  toast(`${workspace.label} \u203a ${clients.find((client) => client.id === clientId)?.name}`);
   await send(MSG.reconcile);
   await load();
 }

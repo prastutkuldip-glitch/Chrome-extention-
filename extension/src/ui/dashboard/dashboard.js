@@ -13,6 +13,7 @@ import { renderClients } from './views/clients.js';
 import { renderSettings } from './views/settings.js';
 import { openUpgrade } from './views/upgrade.js';
 import { maybeShowOnboarding } from './views/onboarding.js';
+import { maybeFinishActivation } from './views/activation.js';
 
 const VIEWS = { week: renderWeek, clients: renderClients, settings: renderSettings };
 
@@ -161,8 +162,12 @@ async function boot() {
   const hash = location.hash.replace('#', '');
   if (VIEWS[hash]) app.view = hash;
   if (hash === 'review') app.view = 'week';
+  if (hash === 'activate') app.view = 'settings';
 
   await reload();
+
+  // Someone who has just paid gets dealt with before anything else.
+  if (await maybeFinishActivation(ctx)) return;
 
   if (hash === 'welcome' || !app.state.settings.onboarding.completed) {
     maybeShowOnboarding(ctx);

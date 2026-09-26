@@ -16,6 +16,7 @@ export const KEYS = {
   license: 'license',
   current: 'current',
   install: 'install',
+  pending: 'pending',
 };
 
 async function readRaw(keys) {
@@ -83,6 +84,25 @@ export async function clearCurrent() {
   await chrome.storage.local.remove(KEYS.current);
 }
 
+/**
+ * A licence key handed over by the activation page that still needs a network
+ * check. Held here so the dashboard can finish the job with one click, because
+ * `chrome.permissions.request` only works from a gesture inside our own UI.
+ */
+export async function getPendingActivation() {
+  const raw = await readRaw(KEYS.pending);
+  return raw[KEYS.pending] || null;
+}
+
+export async function setPendingActivation(pending) {
+  await chrome.storage.local.set({ [KEYS.pending]: pending });
+  return pending;
+}
+
+export async function clearPendingActivation() {
+  await chrome.storage.local.remove(KEYS.pending);
+}
+
 export async function getInstall() {
   const raw = await readRaw(KEYS.install);
   return raw[KEYS.install] || null;
@@ -95,10 +115,10 @@ export async function setInstall(install) {
 
 /** Everything the UI needs in one round trip. */
 export async function loadState() {
-  const [settings, clients, rules, license, current, install] = await Promise.all([
-    getSettings(), getClients(), getRules(), getLicense(), getCurrent(), getInstall(),
+  const [settings, clients, rules, license, current, install, pending] = await Promise.all([
+    getSettings(), getClients(), getRules(), getLicense(), getCurrent(), getInstall(), getPendingActivation(),
   ]);
-  return { settings, clients, rules, license, current, install };
+  return { settings, clients, rules, license, current, install, pending };
 }
 
 /**

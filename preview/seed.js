@@ -143,6 +143,10 @@
       reminders: { weeklyReview: pro, dayOfWeek: 5, hour: 16 },
       onboarding: { completed: true, dismissedTips: [] },
     },
+    // ?pending=1 — a licence handed over by the checkout, awaiting confirmation.
+    ...(params.get('pending') === '1'
+      ? { pending: { key: 'B8F1C2D3-4E5A-6B7C-8D9E-0F1A2B3C4D5E', email: 'buyer@example.com', receivedAt: Date.now() } }
+      : {}),
     ...(params.get('now') === '1'
       ? {
         current: {

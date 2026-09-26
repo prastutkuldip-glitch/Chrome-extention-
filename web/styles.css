@@ -21,6 +21,13 @@
 
 * { box-sizing: border-box; }
 
+/*
+ * The `hidden` attribute only sets `display: none` from the UA stylesheet, so any
+ * declared display wins and the element stays visible. This makes `hidden` mean
+ * hidden, which is what every author assumes it already does.
+ */
+[hidden] { display: none !important; }
+
 html { scroll-behavior: smooth; }
 
 /*
@@ -249,6 +256,29 @@ code { font-family: var(--mono); font-size: 0.88em; background: var(--bg-2); pad
 .upi-steps { margin: 0; padding-left: 1.25rem; font-size: 0.93rem; }
 .upi-steps li { margin-bottom: 6px; }
 .upi-box .mono { font-family: var(--mono); background: #fff; border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; }
+
+/* The licence key on the activation page: big, selectable, hard to mistype. */
+.keybox {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 14px;
+  user-select: all;
+  word-break: break-all;
+}
+.spinner {
+  width: 16px; height: 16px; flex: none; display: inline-block;
+  border: 2px solid var(--line);
+  border-top-color: var(--green);
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.hidden { display: none !important; }
 .tiny { font-size: 0.78rem; }
 .subtle { color: var(--muted); }
 

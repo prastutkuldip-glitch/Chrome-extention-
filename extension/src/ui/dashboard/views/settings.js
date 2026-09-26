@@ -15,10 +15,12 @@ import { getAllVisits, countVisits, getBounds, putVisits } from '../../../platfo
 import { formatShortDate, pluralize } from '../../../core/format.js';
 import { dayKey } from '../../../core/time.js';
 import { licensePanel } from './upgrade.js';
+import { pendingBanner } from './activation.js';
 
 export function renderSettings(ctx) {
   return [
     el('div.section-head', {}, [el('h2', { text: 'Settings' })]),
+    pendingBanner(ctx, ctx.app.state.pending),
     trackingCard(ctx),
     billingCard(ctx),
     displayCard(ctx),

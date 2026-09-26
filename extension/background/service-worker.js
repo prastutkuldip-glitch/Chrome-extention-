@@ -7,7 +7,8 @@
  * Manifest V3 time trackers.
  */
 
-import { ALARMS, TRACKING } from '../src/config.js';
+import { ACTIVATION, ALARMS, TRACKING } from '../src/config.js';
+import { isTrustedOrigin, KEY_KIND, classifyKey } from '../src/core/activation.js';
 import { flush, isPaused, reconcile, stop, STOP_REASONS } from '../src/platform/tracker.js';
 import {
   clearCurrent,
@@ -16,6 +17,7 @@ import {
   loadState,
   patchSettings,
   setInstall,
+  setPendingActivation,
 } from '../src/platform/store.js';
 import { deactivateLicense, activateLicense, reverifyIfDue } from '../src/platform/license.js';
 import { todaySummary } from '../src/platform/queries.js';
@@ -262,6 +264,60 @@ async function openDashboard(hash = '') {
 }
 
 // ----------------------------------------------------------------- messages
+
+/**
+ * Activation handed over by the checkout's redirect page.
+ *
+ * The manifest restricts which origins may talk to us at all; the origin is
+ * checked again here, and — the part that actually matters — the key is always
+ * verified independently. The page is never believed simply because it says so,
+ * so a crafted message from our own origin still cannot grant Pro.
+ */
+chrome.runtime.onMessageExternal.addListener((message, sender, respond) => {
+  handleExternal(message, sender)
+    .then((result) => respond({ ok: true, ...result }))
+    .catch((error) => {
+      console.error('[billed] external activation failed', error);
+      respond({ ok: false, error: 'activation-failed' });
+    });
+  return true;
+});
+
+async function handleExternal(message, sender) {
+  if (!isTrustedOrigin(sender?.origin, ACTIVATION.trustedOrigins)) {
+    return { ok: false, error: 'untrusted-origin' };
+  }
+
+  if (message?.type === 'billed:ping') {
+    return { installed: true, version: chrome.runtime.getManifest().version };
+  }
+
+  if (message?.type !== 'billed:activate') return { ok: false, error: 'unknown-message' };
+
+  const key = String(message.key || '').trim();
+  const kind = classifyKey(key);
+
+  // Our own batch keys verify locally: no network, no permission, no clicks.
+  if (kind === KEY_KIND.offline) {
+    const result = await activateLicense(key, { interactive: false });
+    await refreshBadge();
+    if (result.ok) {
+      await openDashboard('#settings');
+      return { state: 'active' };
+    }
+    return { ok: false, state: 'invalid', error: result.message };
+  }
+
+  // A provider key needs a network check, and `permissions.request` only works
+  // from a gesture inside our own UI — so park it and let the dashboard finish.
+  if (kind === KEY_KIND.provider) {
+    await setPendingActivation({ key, email: message.email || '', receivedAt: Date.now() });
+    await openDashboard('#activate');
+    return { state: 'pending' };
+  }
+
+  return { ok: false, state: 'invalid', error: 'That key was not recognised.' };
+}
 
 chrome.runtime.onMessage.addListener((message, _sender, respond) => {
   handleMessage(message)

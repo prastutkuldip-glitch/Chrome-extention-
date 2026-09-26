@@ -227,7 +227,7 @@ async function assignGroup(ctx, group, choice) {
   await ctx.saveRules([...app.state.rules, rule]);
 
   const name = app.state.clients.find((client) => client.id === clientId)?.name || 'client';
-  toast(`${group.label} → ${name}`);
+  toast(`${group.label} \u203a ${name}`);
 }
 
 function ignoreGroup(ctx, group) {
