@@ -46,6 +46,14 @@ export const PLAN_LIMITS = {
 export const REVERIFY_GRACE_MS = 45 * 24 * 60 * 60 * 1000;
 /** How often the background worker tries to re-verify. */
 export const VERIFY_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
+/**
+ * How long Pro keeps working after a recurring payment fails.
+ *
+ * Cards expire, banks decline, and the provider retries for days. Cutting someone
+ * off the moment the first charge bounces punishes a paying customer for their
+ * bank's behaviour — so they keep working, and get told what to fix.
+ */
+export const PAST_DUE_GRACE_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
  * @param {{ key?: string, status?: string, verifiedAt?: number, expiresAt?: number|null }|null} license
@@ -53,14 +61,85 @@ export const VERIFY_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
  * @returns {'free'|'pro'}
  */
 export function planFor(license, now = Date.now()) {
-  if (!license || !license.key || license.status !== 'active') return 'free';
+  if (!license || !license.key) return 'free';
+
+  // A recurring payment that failed: keep Pro on while the provider retries.
+  if (license.status === 'past_due') {
+    const since = Number(license.pastDueSince) || now;
+    return now - since <= PAST_DUE_GRACE_MS ? 'pro' : 'free';
+  }
+
+  if (license.status !== 'active') return 'free';
   if (license.expiresAt && license.expiresAt <= now) return 'free';
+
   // An offline key was verified against a hash that ships inside the extension.
   // There is no server to re-check it against, so it must never go stale —
   // otherwise someone who paid by UPI would silently lose Pro after 45 days.
   if (license.source === 'offline') return 'pro';
+
   if (license.verifiedAt && now - license.verifiedAt > REVERIFY_GRACE_MS) return 'free';
   return 'pro';
+}
+
+/**
+ * What, if anything, should the user be told about their licence?
+ *
+ * Kept here rather than in the UI so the wording is tested, and so a silent
+ * downgrade is impossible: every state that costs someone their Pro features has
+ * to produce a message explaining it.
+ *
+ * @returns {{ level: 'warn'|'error'|'info', title: string, message: string, action?: string }|null}
+ */
+export function licenseNotice(license, now = Date.now()) {
+  if (!license?.key) return null;
+
+  if (license.status === 'past_due') {
+    const since = Number(license.pastDueSince) || now;
+    const daysLeft = Math.max(0, Math.ceil((PAST_DUE_GRACE_MS - (now - since)) / 86_400_000));
+    return daysLeft > 0
+      ? {
+        level: 'warn',
+        title: 'Your last payment did not go through',
+        message: `Pro keeps working for ${daysLeft} more day${daysLeft === 1 ? '' : 's'}. Updating your card with the payment provider fixes it — nothing here needs changing.`,
+        action: 'manage',
+      }
+      : {
+        level: 'error',
+        title: 'Subscription unpaid',
+        message: 'Pro is switched off because the renewal never completed. Your recorded hours are all still here and come back the moment payment succeeds.',
+        action: 'manage',
+      };
+  }
+
+  if (license.status === 'expired') {
+    return {
+      level: 'error',
+      title: 'Subscription ended',
+      message: 'Pro is off, but nothing was deleted. Your full history is still on this device and returns when you renew.',
+      action: 'renew',
+    };
+  }
+
+  if (license.status === 'refunded') {
+    return {
+      level: 'info',
+      title: 'Purchase refunded',
+      message: 'Pro is switched off. Your recorded hours are untouched, and the free plan keeps tracking everything.',
+      action: 'renew',
+    };
+  }
+
+  if (license.status === 'active' && license.source !== 'offline'
+      && license.verifiedAt && now - license.verifiedAt > REVERIFY_GRACE_MS) {
+    return {
+      level: 'warn',
+      title: 'Could not re-check your licence',
+      message: 'Billed has not reached the licence server in a long while. Reconnect once and Pro comes straight back.',
+      action: 'recheck',
+    };
+  }
+
+  return null;
 }
 
 export function limits(plan) {
@@ -92,7 +171,11 @@ export function historyCutoff(plan, now = Date.now()) {
 
 /** Should the background worker try to re-verify right now? */
 export function needsReverify(license, now = Date.now()) {
-  if (!license?.key || license.status !== 'active') return false;
+  if (!license?.key) return false;
   if (license.source === 'offline') return false; // nothing to re-check
+  // A past-due licence is re-checked more eagerly: the customer may have already
+  // fixed their card, and they should not wait a week to get Pro back.
+  if (license.status === 'past_due') return true;
+  if (license.status !== 'active') return false;
   return !license.verifiedAt || now - license.verifiedAt > VERIFY_INTERVAL_MS;
 }

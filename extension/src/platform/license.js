@@ -20,6 +20,8 @@ import { looksLikeOfflineKey, verifyOfflineKey } from '../core/offline-keys.js';
 export const LICENSE_STATUS = {
   none: 'none',
   active: 'active',
+  /** A recurring charge failed and the provider is still retrying. */
+  past_due: 'past_due',
   invalid: 'invalid',
   refunded: 'refunded',
   expired: 'expired',
@@ -69,24 +71,44 @@ async function askProvider(key) {
   if (!json?.success) return { status: LICENSE_STATUS.invalid, expiresAt: null };
 
   const purchase = json.purchase || {};
-  if (purchase.refunded || purchase.disputed || purchase.chargebacked) {
-    return { status: LICENSE_STATUS.refunded, expiresAt: null };
-  }
-
-  const ended = purchase.subscription_ended_at || purchase.subscription_failed_at || purchase.subscription_cancelled_at;
-  if (ended) {
-    const endedAt = Date.parse(ended);
-    if (Number.isFinite(endedAt) && endedAt <= Date.now()) {
-      return { status: LICENSE_STATUS.expired, expiresAt: endedAt };
-    }
-  }
-
-  return {
-    status: LICENSE_STATUS.active,
-    expiresAt: null,
+  const common = {
     email: purchase.email,
     tier: purchase.variants || purchase.recurrence || 'pro',
+    recurrence: purchase.recurrence || '',
   };
+
+  if (purchase.refunded || purchase.disputed || purchase.chargebacked) {
+    return { ...common, status: LICENSE_STATUS.refunded, expiresAt: null };
+  }
+
+  const when = (value) => {
+    const parsed = Date.parse(value || '');
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+
+  // A subscription that has genuinely finished — cancelled and run its term, or
+  // ended by the provider. Pro goes off.
+  const endedAt = when(purchase.subscription_ended_at);
+  if (endedAt && endedAt <= Date.now()) {
+    return { ...common, status: LICENSE_STATUS.expired, expiresAt: endedAt };
+  }
+
+  // A charge that failed. The provider will keep retrying, so this is not the
+  // same thing as ended — the customer keeps Pro for a grace period and is asked
+  // to fix their card. Treating this as "expired" would punish a paying customer
+  // for their bank declining a renewal.
+  const failedAt = when(purchase.subscription_failed_at);
+  if (failedAt) {
+    return { ...common, status: LICENSE_STATUS.past_due, expiresAt: null, pastDueSince: failedAt };
+  }
+
+  // Cancelled but still inside the paid term: they keep everything until it runs out.
+  const cancelledAt = when(purchase.subscription_cancelled_at);
+  if (cancelledAt && cancelledAt <= Date.now()) {
+    return { ...common, status: LICENSE_STATUS.expired, expiresAt: cancelledAt };
+  }
+
+  return { ...common, status: LICENSE_STATUS.active, expiresAt: null };
 }
 
 /**
@@ -157,6 +179,8 @@ export async function activateLicense(rawKey, options = {}) {
     source: LICENSING.provider,
     verifiedAt: Date.now(),
     expiresAt: result.expiresAt,
+    pastDueSince: result.pastDueSince ?? null,
+    recurrence: result.recurrence || '',
     email: result.email || previous.email || '',
     tier: result.tier || '',
   };
@@ -173,6 +197,7 @@ export async function activateLicense(rawKey, options = {}) {
 function messageFor(status) {
   switch (status) {
     case LICENSE_STATUS.active: return 'Pro unlocked. Thank you — genuinely.';
+    case LICENSE_STATUS.past_due: return 'Pro is on, but your last payment failed. Update your card with the payment provider when you get a moment.';
     case LICENSE_STATUS.invalid: return 'That key was not recognised. Check for a stray space, or paste it again.';
     case LICENSE_STATUS.refunded: return 'This purchase was refunded, so Pro is switched off.';
     case LICENSE_STATUS.expired: return 'This subscription has ended. Renew to switch Pro back on.';
@@ -194,6 +219,12 @@ export async function reverifyIfDue(now = Date.now()) {
     status: result.status,
     verifiedAt: now,
     expiresAt: result.expiresAt ?? license.expiresAt,
+    // Keep the original failure date across re-checks, so the grace period counts
+    // from when the payment first failed rather than restarting every week.
+    pastDueSince: result.status === LICENSE_STATUS.past_due
+      ? (license.pastDueSince || result.pastDueSince || now)
+      : null,
+    recurrence: result.recurrence || license.recurrence || '',
   };
   await setLicense(updated);
   return updated;

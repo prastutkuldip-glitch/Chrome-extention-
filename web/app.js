@@ -56,6 +56,15 @@ function paintPricing() {
   setNote('yearly', `works out to ${money(price.symbol, Math.round(price.yearly / 12))} a month — save ${price.saving}%`);
   setNote('monthly-alt', `Prefer monthly? ${money(price.symbol, price.monthly)}/month, cancel any time.`);
 
+  // Recurring charges need a card; UPI can only make a one-off payment. Saying so
+  // here stops an Indian buyer picking "yearly" and hitting a dead end at checkout.
+  const regionNote = document.querySelector('[data-region-note]');
+  if (regionNote) {
+    regionNote.textContent = region === 'india'
+      ? 'UPI works for the one-off Lifetime plan. Monthly and yearly renew automatically, which needs a card. Refund within 14 days, no questions.'
+      : 'Card payment, renews automatically, cancel any time. Taxes handled at checkout. Refund within 14 days, no questions.';
+  }
+
   for (const button of document.querySelectorAll('[data-region]')) {
     button.setAttribute('aria-pressed', String(button.dataset.region === region));
   }

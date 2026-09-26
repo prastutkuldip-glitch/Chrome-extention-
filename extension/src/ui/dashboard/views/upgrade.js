@@ -8,10 +8,10 @@
  */
 
 import { el, modal, toast } from '../../shared/dom.js';
-import { APP, LINKS, pricingForLocale } from '../../../config.js';
+import { APP, LINKS, PLAN_TERMS, REGION_NOTES, pricingForLocale } from '../../../config.js';
 import { MSG, send } from '../../../platform/messages.js';
 import { formatMoney } from '../../../core/format.js';
-import { PLAN_LIMITS } from '../../../core/plan.js';
+import { licenseNotice, PLAN_LIMITS } from '../../../core/plan.js';
 
 const FEATURES = [
   'Every week of history, not just the last seven days',
@@ -26,12 +26,15 @@ export function openUpgrade(ctx) {
   const pricing = pricingForLocale();
   const recovery = estimateWeeklyLoss(ctx);
 
-  const priceCard = (name, amount, note, link, best = false) => el(`div.price${best ? '.price-best' : ''}`, {
+  const isIndia = pricing.currency === 'INR';
+
+  const priceCard = (plan, amount, extra, link, best = false) => el(`div.price${best ? '.price-best' : ''}`, {
     on: { click: () => openCheckout(link) },
   }, [
-    el('div.price-name', { text: name }),
+    el('div.price-name', { text: PLAN_TERMS[plan].label }),
     el('div.price-amount', { text: `${pricing.symbol}${amount.toLocaleString()}` }),
-    el('div.price-note', { text: note }),
+    el('div.price-note', { text: PLAN_TERMS[plan].note }),
+    extra ? el('div.price-note.strong', { text: extra }) : null,
   ]);
 
   const { close } = modal({
@@ -48,18 +51,14 @@ export function openUpgrade(ctx) {
         ]),
 
       el('div.price-grid', {}, [
-        priceCard('Monthly', pricing.monthly, 'cancel any time', LINKS.checkoutMonthly),
-        priceCard('Yearly', pricing.yearly, `save ${pricing.yearlySavingPercent}%`, LINKS.checkoutYearly, true),
-        priceCard('Lifetime', pricing.lifetime, 'pay once', LINKS.checkoutLifetime),
+        priceCard('monthly', pricing.monthly, '', LINKS.checkoutMonthly),
+        priceCard('yearly', pricing.yearly, `save ${pricing.yearlySavingPercent}%`, LINKS.checkoutYearly, true),
+        priceCard('lifetime', pricing.lifetime, isIndia ? 'UPI works here' : '', LINKS.checkoutLifetime),
       ]),
 
       el('ul.feature-list', {}, FEATURES.map((feature) => el('li', { text: feature }))),
 
-      el('div.tiny.subtle', {
-        text: pricing.currency === 'INR'
-          ? 'Indian pricing, payable by UPI or card. Prices include applicable taxes.'
-          : 'Card and PayPal accepted. Taxes handled at checkout.',
-      }),
+      el('div.tiny.subtle', { text: isIndia ? REGION_NOTES.india : REGION_NOTES.default }),
 
       el('hr.divider'),
       el('div.field', {}, [
@@ -138,6 +137,43 @@ export function licensePanel(ctx) {
 
   const rows = [];
 
+  // Anything that has cost, or is about to cost, the user their Pro features gets
+  // stated at the top. A silent downgrade is the one thing a paid tool must never do.
+  const notice = licenseNotice(license);
+  if (notice) {
+    rows.push(el('div.setting', {}, [
+      el(`div.banner${notice.level === 'warn' ? '' : notice.level === 'info' ? '.banner-accent' : ''}`, {
+        style: { width: '100%' },
+      }, [
+        el('div.strong', { text: notice.title }),
+        el('div.small', { text: notice.message }),
+        notice.action === 'recheck'
+          ? el('button.btn.btn-sm', {
+            style: { marginTop: '8px' },
+            text: 'Check again now',
+            on: {
+              click: async () => {
+                const response = await send(MSG.activateLicense, { key: license.key });
+                await ctx.reload();
+                toast(response.message || 'Checked.');
+              },
+            },
+          })
+          : el('a.btn.btn-sm', {
+            style: { marginTop: '8px' },
+            href: '#',
+            text: notice.action === 'manage' ? 'Update payment' : 'Renew Pro',
+            on: {
+              click: (event) => {
+                event.preventDefault();
+                openUpgrade(ctx);
+              },
+            },
+          }),
+      ]),
+    ]));
+  }
+
   rows.push(el('div.setting', {}, [
     el('div.setting-text', {}, [
       el('div.setting-name', { text: isPro ? 'Billed Pro is active' : `You are on the ${PLAN_LIMITS.free.label} plan` }),
@@ -146,9 +182,13 @@ export function licensePanel(ctx) {
           ? `Licence ending ${String(license.key).slice(-6)}${license.email ? ` · ${license.email}` : ''}`
           : `${PLAN_LIMITS.free.historyDays} days of history, ${PLAN_LIMITS.free.maxClients} clients, no exports.`,
       }),
-      isPro && license.verifiedAt
-        ? el('div.tiny.subtle', { text: `Last checked ${new Date(license.verifiedAt).toLocaleDateString()}. Works offline for 45 days.` })
-        : null,
+      isPro && license.source === 'offline'
+        ? el('div.tiny.subtle', { text: 'One-off licence. Works offline and never expires — nothing to renew.' })
+        : isPro && license.verifiedAt
+          ? el('div.tiny.subtle', {
+            text: `${license.recurrence ? `Renews ${license.recurrence}. ` : ''}Last checked ${new Date(license.verifiedAt).toLocaleDateString()}. Works offline for 45 days.`,
+          })
+          : null,
     ]),
     el('div.setting-control', {}, isPro
       ? el('button.btn.btn-sm', {
