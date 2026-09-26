@@ -7,3 +7,6 @@ dist/
 
 # Generated preview harness output (see tools/make-preview.mjs)
 extension/src/ui/**/preview.html
+
+# Plaintext licence keys — private, never commit
+keys/

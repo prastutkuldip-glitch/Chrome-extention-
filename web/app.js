@@ -26,6 +26,18 @@ const SITE_CONFIG = {
     default: { currency: 'USD', symbol: '$', monthly: 15, yearly: 99, lifetime: 149, saving: 45 },
     india: { currency: 'INR', symbol: '₹', monthly: 499, yearly: 3499, lifetime: 6999, saving: 42 },
   },
+
+  /**
+   * Direct UPI, for selling in India before a card processor is set up.
+   * Leave `id` empty and the whole panel stays hidden — so the page never shows
+   * a half-finished payment instruction.
+   */
+  upi: {
+    id: '',              // e.g. 'yourname@oksbi'
+    name: '',            // the name UPI shows on confirmation, so buyers trust it
+    amount: '₹3,499',    // what the buyer should send
+    note: 'Keys are issued by hand, so allow a few hours. Refunds within 14 days, no questions.',
+  },
 };
 
 const configured = (url) => Boolean(url) && !url.includes('PLACEHOLDER');
@@ -126,6 +138,31 @@ for (const link of document.querySelectorAll('[data-support-link]')) {
   link.textContent = 'Support';
 }
 
+// ------------------------------------------------------------------ upi
+
+function paintUpi() {
+  const box = document.querySelector('[data-upi-box]');
+  if (!box) return;
+
+  const { id, name, amount, note } = SITE_CONFIG.upi;
+  if (!id) {
+    box.hidden = true; // nothing configured: show nothing rather than a blank
+    return;
+  }
+
+  box.hidden = false;
+  const set = (selector, text) => {
+    const node = box.querySelector(selector);
+    if (node) node.textContent = text;
+  };
+  set('[data-upi-id]', id);
+  set('[data-upi-amount]', amount || '');
+  set('[data-upi-name]', name ? ` (${name})` : '');
+  set('[data-upi-email]', SITE_CONFIG.supportEmail);
+  set('[data-upi-note]', note || '');
+}
+
 paintPricing();
 paintCheckout();
 paintInstall();
+paintUpi();

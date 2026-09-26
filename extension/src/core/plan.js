@@ -55,6 +55,10 @@ export const VERIFY_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
 export function planFor(license, now = Date.now()) {
   if (!license || !license.key || license.status !== 'active') return 'free';
   if (license.expiresAt && license.expiresAt <= now) return 'free';
+  // An offline key was verified against a hash that ships inside the extension.
+  // There is no server to re-check it against, so it must never go stale —
+  // otherwise someone who paid by UPI would silently lose Pro after 45 days.
+  if (license.source === 'offline') return 'pro';
   if (license.verifiedAt && now - license.verifiedAt > REVERIFY_GRACE_MS) return 'free';
   return 'pro';
 }
@@ -89,5 +93,6 @@ export function historyCutoff(plan, now = Date.now()) {
 /** Should the background worker try to re-verify right now? */
 export function needsReverify(license, now = Date.now()) {
   if (!license?.key || license.status !== 'active') return false;
+  if (license.source === 'offline') return false; // nothing to re-check
   return !license.verifiedAt || now - license.verifiedAt > VERIFY_INTERVAL_MS;
 }

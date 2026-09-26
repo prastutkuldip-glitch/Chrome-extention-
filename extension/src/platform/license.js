@@ -15,6 +15,7 @@
 import { LICENSING } from '../config.js';
 import { getLicense, setLicense } from './store.js';
 import { needsReverify } from '../core/plan.js';
+import { looksLikeOfflineKey, verifyOfflineKey } from '../core/offline-keys.js';
 
 export const LICENSE_STATUS = {
   none: 'none',
@@ -99,6 +100,29 @@ export async function activateLicense(rawKey, options = {}) {
   const key = String(rawKey || '').trim();
   if (!key) return { ok: false, status: LICENSE_STATUS.invalid, message: 'Enter your licence key.' };
 
+  // Keys sold directly are checked against hashes that ship with the extension.
+  // No network, no permission prompt, no waiting — and they never expire.
+  if (looksLikeOfflineKey(key)) {
+    if (await verifyOfflineKey(key)) {
+      const license = {
+        key,
+        status: LICENSE_STATUS.active,
+        source: 'offline',
+        verifiedAt: Date.now(),
+        expiresAt: null,
+        email: '',
+        tier: 'direct',
+      };
+      await setLicense(license);
+      return { ok: true, status: LICENSE_STATUS.active, license, message: messageFor(LICENSE_STATUS.active) };
+    }
+    return {
+      ok: false,
+      status: LICENSE_STATUS.invalid,
+      message: 'That key was not recognised. Check for a typo — the letters O, I and L are never used.',
+    };
+  }
+
   let granted = await hasNetworkPermission();
   if (!granted) {
     if (!interactive) {
@@ -130,6 +154,7 @@ export async function activateLicense(rawKey, options = {}) {
   const license = {
     key,
     status: result.status,
+    source: LICENSING.provider,
     verifiedAt: Date.now(),
     expiresAt: result.expiresAt,
     email: result.email || previous.email || '',
