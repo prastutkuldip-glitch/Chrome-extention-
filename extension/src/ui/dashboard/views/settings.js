@@ -208,8 +208,19 @@ function displayCard(ctx) {
   })));
   weekSelect.addEventListener('change', () => patch(ctx, 'display', { weekStartsOn: Number(weekSelect.value) }));
 
+  const hoursSelect = el('select.select', {}, [
+    { value: 'decimal', label: '3.42 h — for invoicing' },
+    { value: 'clock', label: '3h 25m — easier to read' },
+  ].map((option) => el('option', {
+    value: option.value,
+    text: option.label,
+    selected: (display.decimalHours ? 'decimal' : 'clock') === option.value,
+  })));
+  hoursSelect.addEventListener('change', () => patch(ctx, 'display', { decimalHours: hoursSelect.value === 'decimal' }));
+
   return card('Display', null, [
     setting('Week starts on', null, weekSelect),
+    setting('Show hours as', 'Exports always use decimal hours, whatever you pick here.', hoursSelect),
   ]);
 }
 

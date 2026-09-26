@@ -5,8 +5,8 @@
  * make assigning it a single click, and get the result out of the browser.
  */
 
-import { el, copyText, downloadText, modal, toast } from '../../shared/dom.js';
-import { createClient, createRule, CLIENT_COLORS } from '../../../core/defaults.js';
+import { el, copyText, downloadText, modal, render, toast } from '../../shared/dom.js';
+import { createClient, createManualEntry, createRule, CLIENT_COLORS } from '../../../core/defaults.js';
 import { canAddClient, can } from '../../../core/plan.js';
 import {
   formatDayLabel,
@@ -17,8 +17,8 @@ import {
   pluralize,
 } from '../../../core/format.js';
 import { filenameFor, toCSV, toInvoiceText, toMarkdown, toStatusUpdate } from '../../../core/exporters.js';
-import { deleteVisitsBetween, deleteVisitsByHostname } from '../../../platform/db.js';
-import { DAY_MS } from '../../../core/time.js';
+import { deleteVisit, deleteVisitsBetween, deleteVisitsByHostname, putVisit } from '../../../platform/db.js';
+import { DAY_MS, HOUR_MS, dayKey, monthLabel, shiftMonths } from '../../../core/time.js';
 
 export function renderWeek(ctx) {
   const { app } = ctx;
@@ -44,26 +44,47 @@ function weekNav(ctx) {
   const { app } = ctx;
   const days = app.sheet.days.map((day) => day.dayKey);
   const canGoBack = can(app.plan, 'multiWeek');
+  const isMonth = app.rangeMode === 'month';
 
-  const shift = (weeks) => {
-    if (weeks < 0 && !canGoBack) {
+  const shift = (steps) => {
+    if (steps < 0 && !canGoBack) {
       ctx.openUpgrade();
       return;
     }
-    app.anchor += weeks * 7 * DAY_MS;
+    if (isMonth) {
+      const shifted = shiftMonths({ from: app.sheet.range.from }, steps, app.sheet.offsetMin);
+      app.anchor = shifted.from + HOUR_MS;
+    } else {
+      app.anchor += steps * 7 * DAY_MS;
+    }
     ctx.refresh();
   };
+
+  const modeButton = (mode, label) => el(`button.btn.btn-sm${app.rangeMode === mode ? '.btn-dark' : '.btn-ghost'}`, {
+    text: label,
+    on: {
+      click: () => {
+        if (mode === 'month' && !can(app.plan, 'monthView')) {
+          ctx.openUpgrade();
+          return;
+        }
+        ctx.setRangeMode(mode);
+      },
+    },
+  });
 
   return el('div.week-nav', {}, [
     el('button.btn.btn-sm', {
       text: '‹',
-      title: canGoBack ? 'Previous week' : 'Previous weeks are a Pro feature',
+      title: canGoBack ? 'Previous' : 'Looking further back is a Pro feature',
       on: { click: () => shift(-1) },
     }),
-    el('div.week-label', { text: formatRangeLabel(days) }),
-    el('button.btn.btn-sm', { text: '›', title: 'Next week', on: { click: () => shift(1) } }),
+    el('div.week-label', {
+      text: isMonth ? monthLabel(app.sheet.range.from, app.sheet.offsetMin) : formatRangeLabel(days),
+    }),
+    el('button.btn.btn-sm', { text: '›', title: 'Next', on: { click: () => shift(1) } }),
     el('button.btn.btn-sm.btn-ghost', {
-      text: 'This week',
+      text: isMonth ? 'This month' : 'This week',
       on: {
         click: () => {
           app.anchor = Date.now();
@@ -73,7 +94,105 @@ function weekNav(ctx) {
     }),
     el('span.grow'),
     roundingNote(ctx),
+    el('div.row', { style: { gap: '2px' } }, [modeButton('week', 'Week'), modeButton('month', 'Month')]),
+    el('button.btn.btn-sm.btn-primary', {
+      text: '+ Add time',
+      title: 'A call, a meeting, anything that happened away from the browser',
+      on: { click: () => addManualEntry(ctx) },
+    }),
   ]);
+}
+
+/**
+ * Manual entry.
+ *
+ * Billed refuses to guess at time spent away from the browser — but the honest
+ * number is also an incomplete one until a call can be added. This is the other
+ * half of that promise.
+ */
+function addManualEntry(ctx) {
+  const { app } = ctx;
+  const clients = app.state.clients.filter((client) => !client.archived);
+
+  if (!clients.length) {
+    toast('Add a client first, then you can log time against it.', 'warn');
+    ctx.setView('clients');
+    return;
+  }
+
+  const today = dayKey(Date.now(), app.sheet.offsetMin);
+  const clientSelect = el('select.select', {}, clients.map((client) => el('option', { value: client.id, text: client.name })));
+  const projectSelect = el('select.select', {});
+  const dateInput = el('input.input', { type: 'date', value: today });
+  const hoursInput = el('input.input', { type: 'number', min: '0.05', step: '0.25', placeholder: '1.5' });
+  const noteInput = el('input.input', { placeholder: 'Kick-off call with Dana' });
+  const billableInput = el('input', { type: 'checkbox', checked: true });
+
+  const paintProjects = () => {
+    const client = clients.find((entry) => entry.id === clientSelect.value);
+    const projects = client?.projects || [];
+    render(projectSelect, [
+      el('option', { value: '', text: projects.length ? 'No project' : 'No projects for this client' }),
+      ...projects.map((project) => el('option', { value: project.id, text: project.name })),
+    ]);
+    projectSelect.disabled = !projects.length;
+  };
+  clientSelect.addEventListener('change', paintProjects);
+  paintProjects();
+
+  const { close } = modal({
+    title: 'Add time by hand',
+    body: [
+      el('p.small.muted', {
+        text: 'For work that did not happen in a browser tab — calls, meetings, whiteboards. It appears on your timesheet exactly like tracked time.',
+      }),
+      el('div.field', {}, [el('span.label', { text: 'Client' }), clientSelect]),
+      el('div.field', {}, [el('span.label', { text: 'Project' }), projectSelect]),
+      el('div.row', {}, [
+        el('div.field.grow', {}, [el('span.label', { text: 'Date' }), dateInput]),
+        el('div.field.grow', {}, [el('span.label', { text: 'Hours' }), hoursInput]),
+      ]),
+      el('div.field', {}, [
+        el('span.label', { text: 'What was it?' }),
+        noteInput,
+        el('span.hint', { text: 'This becomes the description on the invoice line.' }),
+      ]),
+      el('label.switch', {}, [billableInput, el('span', { text: 'Billable' })]),
+    ],
+    actions: [
+      el('button.btn', { text: 'Cancel', on: { click: () => close() } }),
+      el('button.btn.btn-primary', {
+        text: 'Add to timesheet',
+        on: {
+          click: async () => {
+            const hours = Number(hoursInput.value);
+            if (!Number.isFinite(hours) || hours <= 0) {
+              toast('Enter how many hours it took.', 'warn');
+              return;
+            }
+            if (!dateInput.value) {
+              toast('Pick a date.', 'warn');
+              return;
+            }
+            await putVisit(createManualEntry({
+              clientId: clientSelect.value,
+              projectId: projectSelect.value || null,
+              dayKey: dateInput.value,
+              minutes: hours * 60,
+              note: noteInput.value,
+              billable: billableInput.checked,
+              offsetMin: app.sheet.offsetMin,
+            }));
+            close();
+            await ctx.reload();
+            toast(`${hours} h added.`);
+          },
+        },
+      }),
+    ],
+  });
+
+  hoursInput.focus();
 }
 
 function roundingNote(ctx) {
@@ -305,14 +424,22 @@ function dayBlock(ctx, day) {
 
 function lineRow(ctx, line) {
   const { app } = ctx;
+  // Task refs get their own chips, so repeating them in the description just
+  // pushed the readable part of the row off the end.
+  const titles = (line.titles || []).filter(Boolean);
+  const onScreenDescription = titles.length ? titles.join('; ') : line.description;
+
   return el(`div.line${line.billable ? '' : '.line-nonbillable'}`, {}, [
     el('div.line-client', {}, [
       el('span.dot', { style: { background: line.clientColor || 'var(--accent)' } }),
       el('span.truncate', { text: line.clientName }),
     ]),
     el('div.line-desc', {}, [
-      el('div.truncate', { text: line.description || '—' }),
-      line.projectName ? el('div.tiny.subtle', { text: line.projectName }) : null,
+      el('div.truncate', { text: onScreenDescription || '—' }),
+      el('div.row', { style: { gap: '6px' } }, [
+        line.projectName ? el('span.tiny.subtle', { text: line.projectName }) : null,
+        line.manual ? el('span.pill.tiny', { text: 'added by hand' }) : null,
+      ]),
       (line.refs || []).length
         ? el('div.line-refs', {}, line.refs.slice(0, 6).map((ref) => el('span.ref', { text: ref })))
         : null,
@@ -335,11 +462,15 @@ function lineMenu(ctx, line) {
     body: [
       el('p.small.muted', { text: line.description || 'No description captured.' }),
       el('div.small', {}, [
-        el('div', { text: `Sites: ${(line.hostnames || []).join(', ') || '—'}` }),
-        el('div', { text: `Built from ${pluralize(line.visitCount, 'visit')}.` }),
+        line.manual
+          ? el('div', { text: 'Added by hand.' })
+          : el('div', { text: `Sites: ${(line.hostnames || []).join(', ') || '—'}` }),
+        el('div', { text: `Built from ${pluralize(line.visitCount, line.manual ? 'entry' : 'visit', line.manual ? 'entries' : 'visits')}.` }),
       ]),
       el('p.tiny.subtle', {
-        text: 'Lines are derived from your rules, so the way to change one permanently is to change the rule. Deleting removes the underlying recorded time from this device.',
+        text: line.manual
+          ? 'Manual entries stand on their own — delete this one and add it again to change it.'
+          : 'Lines are derived from your rules, so the way to change one permanently is to change the rule. Deleting removes the underlying recorded time from this device.',
       }),
     ],
     actions: [
@@ -358,7 +489,13 @@ function lineMenu(ctx, line) {
         on: {
           click: async () => {
             close();
-            await deleteVisitsBetween(line.start, line.end + 1);
+            // Prefer deleting exactly the records behind this line; fall back to
+            // the time span only if ids are somehow missing.
+            if (line.visitIds?.length) {
+              await Promise.all(line.visitIds.map((id) => deleteVisit(id)));
+            } else {
+              await deleteVisitsBetween(line.start, line.end + 1);
+            }
             await ctx.reload();
             toast('Deleted from this device.');
           },

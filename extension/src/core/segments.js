@@ -137,5 +137,9 @@ function finalizeBlock(block) {
     titles: titles.slice(0, 6),
     hostnames: hostnames.slice(0, 4),
     visitCount: block.parts.length,
+    /** True only when every part was typed in by hand, so the label is accurate. */
+    manual: block.parts.every((part) => part.manual === true),
+    /** Record ids, so a single line can be deleted precisely. */
+    visitIds: block.parts.map((part) => part.id).filter(Boolean),
   };
 }

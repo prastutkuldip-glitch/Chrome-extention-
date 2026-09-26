@@ -30,8 +30,6 @@ export const DEFAULT_SETTINGS = {
     minSegmentSeconds: 30,
     /** Same client within this gap becomes one timesheet line. */
     mergeGapSeconds: 300,
-    /** Never store query strings. Opt-in only, and clearly labelled. */
-    keepQuery: false,
     /** Titles carry ticket keys; a user can turn them off entirely. */
     storeTitles: true,
     pausedUntil: 0,
@@ -47,8 +45,9 @@ export const DEFAULT_SETTINGS = {
   },
   display: {
     weekStartsOn: 1,
+    /** `3.42 h` for invoicing, or `3h 25m` for reading. */
     decimalHours: true,
-    theme: 'system',
+    range: 'week',
   },
   privacy: {
     blocklist: [...SUGGESTED_BLOCKLIST],
@@ -103,6 +102,38 @@ export function createRule({ clientId, kind = 'hostname', value, projectId = nul
 
 export function createProject({ name } = {}) {
   return { id: createId('pj'), name: String(name || '').trim() || 'New project' };
+}
+
+/**
+ * Time that happened away from the browser: a call, a meeting, a whiteboard.
+ *
+ * Billed deliberately does not guess at this — but it has to be possible to add
+ * it, or the honest number is also an incomplete one. A manual entry carries its
+ * client directly instead of being matched by a rule.
+ *
+ * @param {{ clientId: string, projectId?: string|null, dayKey: string,
+ *           minutes: number, note?: string, billable?: boolean, offsetMin?: number }} input
+ */
+export function createManualEntry({
+  clientId, projectId = null, dayKey, minutes, note = '', billable = true, startHour = 9, offsetMin,
+}) {
+  const dayStartMs = Date.parse(`${dayKey}T00:00:00.000Z`)
+    - (offsetMin ?? -new Date().getTimezoneOffset()) * 60_000;
+  const start = dayStartMs + startHour * 3_600_000;
+  const duration = Math.max(1, Math.round(Number(minutes) || 0)) * 60_000;
+  return {
+    id: createId('m'),
+    start,
+    end: start + duration,
+    hostname: '',
+    path: '',
+    title: String(note || '').trim(),
+    refs: [],
+    manual: true,
+    clientId,
+    projectId,
+    billable,
+  };
 }
 
 /** Deep-merge stored settings over the defaults so upgrades never lose keys. */

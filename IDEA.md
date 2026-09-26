@@ -153,9 +153,10 @@ at $15/month or $99/year, lifetime $149, with Indian pricing at ₹499 / ₹3,49
 
 Recorded so they can be checked against reality rather than rediscovered:
 
-- **Browser-only capture is a real ceiling.** Calls, IDE work and desk time are invisible. The honest
-  answer — under-report and let the user add a line — is the right one, but it caps perceived value
-  and will be the most common complaint.
+- **Browser-only capture is still a ceiling, though a lower one now.** Calls, IDE work and desk time
+  cannot be detected, so manual entry exists to add them — a promise the product originally made in
+  its own FAQ and did not keep until it was audited. Automatic capture remains browser-only, and that
+  will still be the most common complaint.
 - **The category is crowded.** Winning needs the wedge to stay sharp: local-first, no account, invoice
   output. Drifting towards a general time tracker means competing with funded companies on their turf.
 - **Retention of a passive tool is unproven.** The toolbar badge and the Friday reminder exist

@@ -16,14 +16,19 @@ export const PLAN_LIMITS = {
     label: 'Free',
     historyDays: 7,
     maxClients: 3,
+    /**
+     * Only gates that are actually enforced live here. A flag nobody checks is
+     * worse than no flag: it reads like a limit while doing nothing.
+     *
+     * Rates, money totals, non-billable time and manual entries are deliberately
+     * free — seeing what the time is worth is the whole argument for upgrading.
+     */
     features: {
       export: false,
       rounding: false,
-      rates: true,
       multiWeek: false,
-      reports: false,
+      monthView: false,
       reminders: false,
-      nonBillable: true,
     },
   },
   pro: {
@@ -33,11 +38,9 @@ export const PLAN_LIMITS = {
     features: {
       export: true,
       rounding: true,
-      rates: true,
       multiWeek: true,
-      reports: true,
+      monthView: true,
       reminders: true,
-      nonBillable: true,
     },
   },
 };

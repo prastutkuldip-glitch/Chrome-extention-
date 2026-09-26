@@ -6,8 +6,8 @@
  * to be one glance away.
  */
 
-import { el, modal, toast } from '../../shared/dom.js';
-import { CLIENT_COLORS, createClient, createRule } from '../../../core/defaults.js';
+import { el, modal, render, toast } from '../../shared/dom.js';
+import { CLIENT_COLORS, createClient, createProject, createRule } from '../../../core/defaults.js';
 import { RULE_KINDS, RULE_KIND_LABELS } from '../../../core/attribution.js';
 import { canAddClient, maxClients } from '../../../core/plan.js';
 import { formatDecimalHours, formatMoney, pluralize } from '../../../core/format.js';
@@ -80,10 +80,14 @@ function clientRow(ctx, client) {
           : null,
       ]),
       el('div.client-rules', {}, [
-        ...rules.map((rule) => ruleChip(ctx, rule)),
+        ...rules.map((rule) => ruleChip(ctx, client, rule)),
         el('button.btn.btn-sm.btn-ghost', {
           text: '+ rule',
           on: { click: () => editRule(ctx, client, null) },
+        }),
+        el('button.btn.btn-sm.btn-ghost', {
+          text: (client.projects || []).length ? `Projects (${client.projects.length})` : '+ project',
+          on: { click: () => editProjects(ctx, client) },
         }),
       ]),
       rules.length ? null : el('div.tiny.subtle', { text: 'No rules yet — this client will never collect time.' }),
@@ -98,11 +102,17 @@ function clientRow(ctx, client) {
   ]);
 }
 
-function ruleChip(ctx, rule) {
+function ruleChip(ctx, client, rule) {
   const { app } = ctx;
-  const label = `${RULE_KIND_LABELS[rule.kind]}: ${rule.value}`;
+  const project = client.projects?.find((entry) => entry.id === rule.projectId);
+  const label = `${RULE_KIND_LABELS[rule.kind]}: ${rule.value}${project ? ` → ${project.name}` : ''} — click to edit`;
+
   return el(`span.rule-chip${rule.enabled === false ? '.rule-chip-off' : ''}`, { title: label }, [
-    el('span', { text: rule.value }),
+    el('span.rule-chip-label', {
+      text: rule.value,
+      on: { click: () => editRule(ctx, client, rule) },
+    }),
+    project ? el('span.tiny.subtle', { text: project.name }) : null,
     rule.billable === false ? el('span.tiny', { text: 'n/b' }) : null,
     el('button', {
       text: '\u00d7',
@@ -208,6 +218,16 @@ function editRule(ctx, client, rule) {
   const valueInput = el('input.input', { value: draft.value, placeholder: 'acme.atlassian.net' });
   const billableInput = el('input', { type: 'checkbox', checked: draft.billable !== false });
 
+  const projects = client.projects || [];
+  const projectSelect = el('select.select', {}, [
+    el('option', { value: '', text: 'No project' }),
+    ...projects.map((project) => el('option', {
+      value: project.id,
+      text: project.name,
+      selected: project.id === draft.projectId,
+    })),
+  ]);
+
   const hint = el('span.hint', {});
   const updateHint = () => {
     hint.textContent = {
@@ -225,6 +245,13 @@ function editRule(ctx, client, rule) {
     body: [
       el('div.field', {}, [el('span.label', { text: 'Match on' }), kindSelect, hint]),
       el('div.field', {}, [el('span.label', { text: 'Value' }), valueInput]),
+      projects.length
+        ? el('div.field', {}, [
+          el('span.label', { text: 'Project' }),
+          projectSelect,
+          el('span.hint', { text: 'Time matched by this rule is filed under this project.' }),
+        ])
+        : null,
       el('label.switch', {}, [billableInput, el('span', { text: 'Time matched by this rule is billable' })]),
     ],
     actions: [
@@ -242,6 +269,7 @@ function editRule(ctx, client, rule) {
               ...draft,
               kind: kindSelect.value,
               value,
+              projectId: projectSelect.value || null,
               billable: billableInput.checked,
             };
             const rules = isNew
@@ -266,4 +294,103 @@ async function toggleArchive(ctx, client) {
   ));
   await ctx.saveClients(clients);
   toast(client.archived ? `${client.name} restored.` : `${client.name} archived. ${pluralize(app.state.rules.filter((rule) => rule.clientId === client.id).length, 'rule')} kept.`);
+}
+
+
+/**
+ * Projects.
+ *
+ * A client with several workstreams needs them separated on the invoice, and the
+ * timesheet already understands projects — this is the missing way to create one.
+ */
+function editProjects(ctx, client) {
+  const { app } = ctx;
+  let projects = [...(client.projects || [])];
+
+  const list = el('div.col', { style: { gap: '6px' } });
+  const nameInput = el('input.input', { placeholder: 'Website redesign' });
+
+  const usedBy = (projectId) => app.state.rules.filter((rule) => rule.projectId === projectId).length;
+
+  const paint = () => {
+    render(list, projects.length
+      ? projects.map((project) => {
+        const rename = el('input.input.input-sm', { value: project.name });
+        rename.addEventListener('change', () => {
+          const value = rename.value.trim();
+          if (value) project.name = value;
+        });
+        const rules = usedBy(project.id);
+        return el('div.row', {}, [
+          rename,
+          rules ? el('span.pill.tiny', { text: `${rules} rule${rules === 1 ? '' : 's'}` }) : null,
+          el('button.btn.btn-sm.btn-ghost', {
+            text: '\u00d7',
+            title: rules ? 'Remove; rules using it fall back to no project' : 'Remove',
+            on: {
+              click: () => {
+                projects = projects.filter((entry) => entry.id !== project.id);
+                paint();
+              },
+            },
+          }),
+        ]);
+      })
+      : el('div.tiny.subtle', { text: 'No projects yet. Everything is billed to the client directly.' }));
+  };
+  paint();
+
+  const add = () => {
+    const name = nameInput.value.trim();
+    if (!name) return;
+    projects = [...projects, createProject({ name })];
+    nameInput.value = '';
+    paint();
+    nameInput.focus();
+  };
+  nameInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') add();
+  });
+
+  const { close } = modal({
+    title: `Projects for ${client.name}`,
+    body: [
+      el('p.small.muted', {
+        text: 'Optional. Use projects when one client has separate workstreams you want shown separately on the invoice.',
+      }),
+      list,
+      el('div.row', { style: { marginTop: '4px' } }, [
+        nameInput,
+        el('button.btn.btn-sm', { text: 'Add', on: { click: add } }),
+      ]),
+    ],
+    actions: [
+      el('button.btn', { text: 'Cancel', on: { click: () => close() } }),
+      el('button.btn.btn-primary', {
+        text: 'Save projects',
+        on: {
+          click: async () => {
+            close();
+            const keptIds = new Set(projects.map((project) => project.id));
+            await ctx.saveClients(app.state.clients.map((entry) => (
+              entry.id === client.id ? { ...entry, projects } : entry
+            )));
+            // A rule pointing at a deleted project would file time under a name
+            // that no longer exists, so clear those references.
+            const orphaned = app.state.rules.filter(
+              (rule) => rule.clientId === client.id && rule.projectId && !keptIds.has(rule.projectId),
+            );
+            if (orphaned.length) {
+              await ctx.saveRules(app.state.rules.map((rule) => (
+                orphaned.includes(rule) ? { ...rule, projectId: null } : rule
+              )));
+            }
+            toast('Projects saved.');
+          },
+        },
+      }),
+    ],
+  });
+
+  nameInput.focus();
 }

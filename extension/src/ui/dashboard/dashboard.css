@@ -136,6 +136,8 @@ body { background: var(--bg); }
 }
 .rule-chip button:hover { color: var(--danger); background: var(--danger-soft); }
 .rule-chip-off { opacity: 0.55; text-decoration: line-through; }
+.rule-chip-label { cursor: pointer; }
+.rule-chip-label:hover { color: var(--accent-text); }
 
 .color-swatches { display: flex; gap: 5px; flex-wrap: wrap; }
 .swatch {

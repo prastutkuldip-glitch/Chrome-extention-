@@ -135,8 +135,11 @@ export function cleanTitle(title) {
  * @returns {{ ok: boolean, reason?: string, hostname?: string, path?: string, title?: string }}
  */
 export function prepareVisit({ url, title }, settings = {}) {
-  const { blocklist = [], storeTitles = true, keepQuery = false } = settings;
-  const sanitized = sanitizeUrl(url, { keepQuery });
+  const { blocklist = [], storeTitles = true } = settings;
+  // Query strings are dropped unconditionally. There is no setting for this on
+  // purpose: the only thing a toggle could do is store more sensitive data, and
+  // it would make the privacy policy conditional rather than true.
+  const sanitized = sanitizeUrl(url, { keepQuery: false });
   if (!sanitized.ok) return sanitized;
   if (compileBlocklist(blocklist)(sanitized.hostname, sanitized.path)) {
     return { ok: false, reason: 'blocked' };

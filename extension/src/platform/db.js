@@ -174,6 +174,11 @@ export function pruneBefore(ts) {
   });
 }
 
+/** Delete one record — used for manual entries and single-line corrections. */
+export function deleteVisit(id) {
+  return run('readwrite', (store) => { store.delete(id); });
+}
+
 export function deleteAllVisits() {
   return run('readwrite', (store) => { store.clear(); });
 }

@@ -57,14 +57,25 @@ test('free limits are real but usable', () => {
   assert.equal(canAddClient('free', 3), false);
   assert.equal(can('free', 'export'), false);
   assert.equal(can('free', 'rounding'), false);
-  assert.equal(can('free', 'rates'), true, 'free users must be able to see the money — that is the pitch');
+  assert.equal(can('free', 'monthView'), false);
 });
 
 test('pro is unlimited', () => {
   assert.equal(maxClients('pro'), Infinity);
   assert.equal(canAddClient('pro', 500), true);
-  for (const feature of ['export', 'rounding', 'multiWeek', 'reports', 'reminders']) {
+  for (const feature of ['export', 'rounding', 'multiWeek', 'monthView', 'reminders']) {
     assert.equal(can('pro', feature), true, feature);
+  }
+});
+
+test('seeing what the time is worth is never gated', () => {
+  // Rates, money totals, non-billable time and manual entries are deliberately
+  // free: showing someone their own leak is the entire argument for upgrading.
+  // These used to be declared as flags that nothing checked, which read like
+  // limits while doing nothing.
+  for (const feature of ['rates', 'reports', 'nonBillable', 'manualEntry']) {
+    assert.equal(can('free', feature), false, `${feature} should not exist as a flag at all`);
+    assert.equal(can('pro', feature), false, `${feature} should not exist as a flag at all`);
   }
 });
 

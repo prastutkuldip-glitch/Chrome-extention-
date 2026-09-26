@@ -6,8 +6,8 @@ import { el, qs, qsa, render, toast } from '../shared/dom.js';
 import { MSG, send } from '../../platform/messages.js';
 import { loadState, setClients, setRules, setSettings } from '../../platform/store.js';
 import { buildSheetFor } from '../../platform/queries.js';
-import { planFor } from '../../core/plan.js';
-import { tzOffsetMinutes, weekRange } from '../../core/time.js';
+import { can, planFor } from '../../core/plan.js';
+import { monthRange, tzOffsetMinutes, weekRange } from '../../core/time.js';
 import { renderWeek } from './views/week.js';
 import { renderClients } from './views/clients.js';
 import { renderSettings } from './views/settings.js';
@@ -19,6 +19,7 @@ const VIEWS = { week: renderWeek, clients: renderClients, settings: renderSettin
 
 export const app = {
   view: 'week',
+  rangeMode: 'week',
   anchor: Date.now(),
   state: null,
   plan: 'free',
@@ -42,6 +43,7 @@ export const ctx = {
   reload,
   refresh,
   setView,
+  setRangeMode,
   openUpgrade: () => openUpgrade(ctx),
   async saveSettings(settings) {
     app.state.settings = settings;
@@ -65,11 +67,25 @@ export const ctx = {
   toast,
 };
 
+/**
+ * The range currently on screen. Month is what "unlimited history" is actually
+ * for — retainers and invoices are monthly — so it is a Pro gate rather than a
+ * hidden feature.
+ */
 function currentRange() {
+  const offsetMin = tzOffsetMinutes(app.anchor);
+  if (app.rangeMode === 'month' && can(app.plan, 'monthView')) {
+    return monthRange(app.anchor, offsetMin);
+  }
   return weekRange(app.anchor, {
     weekStartsOn: app.state?.settings?.display?.weekStartsOn ?? 1,
-    offsetMin: tzOffsetMinutes(app.anchor),
+    offsetMin,
   });
+}
+
+export function setRangeMode(mode) {
+  app.rangeMode = mode;
+  return refresh();
 }
 
 /** Full reload: storage + database. */

@@ -83,6 +83,19 @@ export function buildTimesheet(input) {
   const attributed = [];
   const unassignedVisits = [];
   for (const visit of normalized) {
+    // A manual entry carries its client directly — it was typed in by the user,
+    // so there is nothing for a rule to decide.
+    if (visit.clientId && clientById.has(visit.clientId)) {
+      attributed.push({
+        ...visit,
+        clientId: visit.clientId,
+        projectId: visit.projectId || null,
+        billable: visit.billable !== false,
+        ruleId: null,
+      });
+      continue;
+    }
+
     const match = attribute(visit, compiled);
     if (match && clientById.has(match.clientId)) {
       attributed.push({ ...visit, ...match });
@@ -174,14 +187,20 @@ function findProjectName(client, projectId) {
   return client.projects.find((project) => project.id === projectId)?.name || null;
 }
 
-/** A human line description: task refs first, then the clearest page titles. */
+/**
+ * A human line description.
+ *
+ * Task references are the evidence a client can check, so they lead — but only in
+ * exports. On screen they are also shown as separate chips, and repeating them
+ * here just pushed the useful text off the end of the row.
+ */
 function describeLine(block) {
   const refs = (block.refs || []).slice(0, 4);
   const titles = (block.titles || []).filter(Boolean).slice(0, 3);
   if (refs.length && titles.length) return `${refs.join(', ')} — ${titles.join('; ')}`;
   if (refs.length) return refs.join(', ');
   if (titles.length) return titles.join('; ');
-  return (block.hostnames || []).join(', ');
+  return (block.hostnames || []).join(', ') || 'Added by hand';
 }
 
 function sum(rows, key) {

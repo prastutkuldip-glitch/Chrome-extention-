@@ -69,15 +69,22 @@ Consultants, freelancers, agencies, lawyers, accountants — anyone whose income
 actually got logged. Salaried too: status-update mode turns the same data into a weekly update for a
 manager, or the bullet list you wish you had before a performance review.
 
+NOT EVERYTHING HAPPENS IN A TAB
+
+Calls, meetings and whiteboard sessions cannot be detected, and Billed will not invent them. Add
+them by hand in a few seconds and they sit on the timesheet exactly like tracked time, with your own
+description on the invoice line.
+
 FREE
 
-Full tracking, the last 7 days of history, up to 3 clients, hourly rates and money totals, and
-today's hours on your toolbar. No card, no account.
+Full tracking, the last 7 days of history, up to 3 clients, hourly rates and money totals, manual
+entries, non-billable time, and today's hours on your toolbar. No card, no account.
 
 PRO
 
-Unlimited history and clients, CSV and invoice exports, billing increments (6/10/15/30/60 minutes,
-nearest or always up), a Friday review reminder, and status-update mode.
+Unlimited history and clients, projects per client, a month view for monthly invoicing, CSV and
+invoice exports, billing increments (6/10/15/30/60 minutes, nearest or always up), a Friday review
+reminder, and status-update mode.
 
 Nothing is ever deleted when a plan changes. The free plan simply shows less; your history stays on
 your device, waiting.

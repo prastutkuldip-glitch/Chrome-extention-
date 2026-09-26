@@ -149,11 +149,19 @@ Core logic is deliberately separated from anything Chrome-shaped. That is what m
 |---|---|---|
 | Tracking | Everything, always | Everything, always |
 | History shown | Last 7 days | Unlimited |
-| Clients | 3 | Unlimited |
+| Clients and projects | 3 clients | Unlimited |
 | Rates and money totals | ✅ | ✅ |
+| Manual entries (calls, meetings) | ✅ | ✅ |
+| Non-billable time | ✅ | ✅ |
+| Month view | — | ✅ |
 | Exports (CSV, invoice, summary) | — | ✅ |
 | Billing increments | — | ✅ |
 | Weekly review reminder | — | ✅ |
+
+Seeing what the time is worth is never gated — showing someone their own leak is
+the whole argument for upgrading. A test enforces that every declared plan flag
+actually differs between the two plans, so a limit that reads like a gate can
+never quietly do nothing.
 
 The free plan keeps recording past its own window: nothing is deleted, so upgrading reveals history
 that was accumulating all along. Free users can see the money, because the money is the argument.

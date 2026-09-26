@@ -55,6 +55,41 @@ export function dayRange(ts, offsetMin = tzOffsetMinutes(ts)) {
   return { from, to: from + DAY_MS, days: [dayKey(ts, offsetMin)] };
 }
 
+/**
+ * Range covering the calendar month that contains `ts`.
+ * Invoices and retainers are usually monthly, so this is what "unlimited history"
+ * is actually for.
+ */
+export function monthRange(ts, offsetMin = tzOffsetMinutes(ts)) {
+  const key = dayKey(ts, offsetMin);
+  const [year, month] = key.split('-').map(Number);
+  const from = dayStart(`${year}-${String(month).padStart(2, '0')}-01`, offsetMin);
+  const nextYear = month === 12 ? year + 1 : year;
+  const nextMonth = month === 12 ? 1 : month + 1;
+  const to = dayStart(`${nextYear}-${String(nextMonth).padStart(2, '0')}-01`, offsetMin);
+  return { from, to, days: dayKeysBetween(from, to, offsetMin) };
+}
+
+/** Shift a month range by whole calendar months. */
+export function shiftMonths(range, months, offsetMin = tzOffsetMinutes(range.from)) {
+  const key = dayKey(range.from, offsetMin);
+  const [year, month] = key.split('-').map(Number);
+  const total = (year * 12 + (month - 1)) + months;
+  const targetYear = Math.floor(total / 12);
+  const targetMonth = (total % 12) + 1;
+  const anchor = dayStart(`${targetYear}-${String(targetMonth).padStart(2, '0')}-01`, offsetMin);
+  return monthRange(anchor + HOUR_MS, offsetMin);
+}
+
+/** `September 2026` */
+export function monthLabel(ts, offsetMin = tzOffsetMinutes(ts)) {
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+  const key = dayKey(ts, offsetMin);
+  const [year, month] = key.split('-').map(Number);
+  return `${MONTHS[month - 1]} ${year}`;
+}
+
 /** Every `YYYY-MM-DD` touched by `[from, to)`. */
 export function dayKeysBetween(from, to, offsetMin = tzOffsetMinutes(from)) {
   const keys = [];
